@@ -82,6 +82,8 @@ class Generate:
 
 
 class WinoGrande(Generate):
+    """https://github.com/allenai/winogrande 先手动下载"""
+
     def format_one_json(self, item):
         return dict(input=self.format_chat_prompt(item), ideal=item["answer"])
 
@@ -101,7 +103,13 @@ class WinoGrande(Generate):
 
 
 class StoryCloze(Generate):
-    """story_cloze"""
+    """Story Cloze Test Winter 2018 (recommended) set:
+        \* val set: https://goo.gl/XWjas1
+        \* test set: https://goo.gl/BcTtB4
+       Story Cloze Test Spring 2016 set:
+        \* val set: https://goo.gl/cDmS6I
+        \* test set: https://goo.gl/iE31Qm
+    """
 
     def test_data_set_file_path(self):
         return os.path.join(self.dataset_path, self.test_dataset_path[0], self.test_dataset_path[1])
@@ -126,7 +134,9 @@ class StoryCloze(Generate):
 
 
 class COPA(Generate):
-    """COPA (Choice of Plausible Alternatives)"""
+    """COPA (Choice of Plausible Alternatives)
+    https://people.ict.usc.edu/~gordon/copa.html
+    """
 
     def test_data_set_file_path(self):
         return os.path.join(self.dataset_path,
@@ -157,7 +167,9 @@ class COPA(Generate):
 
 
 class MultiRC(Generate):
-    """MultiRC (Multi-Sentence Reading Comprehension)"""
+    """MultiRC (Multi-Sentence Reading Comprehension)
+    http://www.eraserbenchmark.com/zipped/multirc.tar.gz
+    """
 
     def test_data_set_file_path(self):
         return os.path.join(self.dataset_path, self.test_dataset_path[0], self.test_dataset_path[1])
