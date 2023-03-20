@@ -1,6 +1,8 @@
 # -*- coding:utf-8 -*-
+import copy
 import os
 from typing import Any
+import json
 
 import jsonlines
 import evals
@@ -206,7 +208,6 @@ class BoolQ(Generate):
     def format_chat_prompt(self, item):
         return [{"role": "system",
                  "content": "TASK: Read a short passage and judge whether the given question is correct, in the format \"<answer>\". The answer must be 'true' or 'false' only."},
-                {"role": "system", "content": f"title: {item['title']}"},
                 {"role": "system", "content": f"passage: {item['passage']}"},
                 {"role": "user", "content": f"question: {item['question']}"}]
 
@@ -307,14 +308,78 @@ class CNNDailyMail(Generate):
         return dict(input=self.format_chat_prompt(item), ideal=item["highlights"])
 
     def format_chat_prompt(self, item):
-        return [{"role": "system", "content": f"{item['article']}"}]
+        return [{"role": "system",
+                 "content": f"TASK: Read article and prompt a bref summary. article: ```{item['article']}```"}]
 
-    def format_one_yaml(self): ...  # TODO
+
+class SQuAD(Generate):
+    """SQuAD (Stanford Question Answering Dataset)"""
+
+    def test_data_set_file_path(self):
+        return os.path.join(self.dataset_path, self.test_dataset_path[0], self.test_dataset_path[1])
+
+    def read_dataset_as_list(self, dataset_file_path):
+        with open(dataset_file_path, "r") as f:
+            file_content = json.load(f)
+        items = []
+        for i in file_content["data"]:
+            for j in i["paragraphs"]:
+                for k in j["qas"]:
+                    k["context"] = j["context"]
+                    k["title"] = i["title"]
+                    items.append(k)
+        return items
+
+    def format_one_json(self, item):
+        if not item["is_impossible"]:
+            return dict(input=self.format_chat_prompt(item), ideal=[answer["text"] for answer in item['answers']])
+        return dict(input=self.format_chat_prompt(item), ideal=[answer["text"] for answer in item['plausible_answers']])
+
+    def format_chat_prompt(self, item):
+        return [
+            {"role": "system",
+             "content": "TASK: Read passage and answer question, where the answer to question is a segment of text, or span, from the corresponding reading passage, or the question might be unanswerable."},
+            {"role": "system", "content": f"Title: {item['title']}"},
+            {"role": "system", "content": f"Passage: {item['context']}"},
+            {"role": "user", "content": f"Question: {item['question']}"}
+        ]
+
+
+class RACE(Generate):
+    def test_data_set_file_path(self):
+        return os.path.join(self.dataset_path, self.test_dataset_path[0])
+
+    def read_dataset_as_list(self, dataset_file_path):
+        dataset = load_dataset(dataset_file_path)
+        dataset_test = dataset[self.test_dataset_path[1]]
+        return [json.loads(item["text"]) for item in dataset_test]
+
+    def format_one_json(self, item):
+        return dict(input=self.format_chat_prompt(item), ideal=item['answers'])
+
+    def format_chat_prompt(self, item):
+        alphabet = ["A", "B", "C", "D", "E", "F", "G", "H"]
+        template = [{"role": "system",
+                     "content": "TASK: There is an article followed by some questions. For each of them there are some choices marked A, B, C, etc. You should decide on the best choice one by one after reading the article."},
+                    {"role": "system", "content": f"Article: {item['article']}"}]
+        for index in range(len(item["questions"])):
+            content = f"Question {index + 1}: {item['questions'][index]} \nOptions: "
+            for option in item["options"][index]:
+                content += "\n"
+                content += alphabet[item["options"][index].index(option)]
+                content += ". "
+                content += option
+            template.append({"role": "user", "content": content})
+        return template
 
 
 if __name__ == '__main__':
-    # CNNDailyMail(jsonl_path=["CNNDailyMail.jsonl"], yaml_path=["CNNDailyMail.yaml"],
-    #              test_dataset_path=["cnn_dailymail", "3.0.0"])
+    RACE(jsonl_path=["RACE.jsonl"], yaml_path=["RACE.yaml"], test_dataset_path=["RACE", "test"])
+
+    SQuAD(jsonl_path=["SQuAD.jsonl"], yaml_path=["SQuAD.yaml"], test_dataset_path=["SQuAD", "dev-v2.0.json"])
+
+    CNNDailyMail(jsonl_path=["CNNDailyMail.jsonl"], yaml_path=["CNNDailyMail.yaml"],
+                 test_dataset_path=["cnn_dailymail", "3.0.0"])
 
     COQA(jsonl_path=["COQA.jsonl"], yaml_path=["COQA.yaml"], test_dataset_path=["coqa"])
 

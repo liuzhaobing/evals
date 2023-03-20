@@ -439,4 +439,102 @@ dataset = load_dataset("coqa")
 dataset_val = dataset["validation"]  # validation/train
 ```
 
+## SQuAD (Stanford Question Answering Dataset)
+
+*Stanford Question Answering Dataset (SQuAD) is a reading comprehension dataset, consisting of questions posed by crowdworkers on a set of Wikipedia articles, where the answer to every question is a segment of text, or span, from the corresponding reading passage, or the question might be unanswerable.*
+
+原文地址：https://rajpurkar.github.io/SQuAD-explorer/
+
+#### 数据集格式
+
+```json
+{
+	"title": "Force",
+    "paragraphs": [
+        {
+            "context": "Philosophers in antiquity used the concept of force in the study of stationary and moving objects and simple machines, but thinkers such as Aristotle and Archimedes retained fundamental errors in understanding force. In part this was due to an incomplete understanding of the sometimes non-obvious force of friction, and a consequently inadequate view of the nature of natural motion. A fundamental error was the belief that a force is required to maintain motion, even at a constant velocity. Most of the previous misunderstandings about motion and force were eventually corrected by Galileo Galilei and Sir Isaac Newton. With his mathematical insight, Sir Isaac Newton formulated laws of motion that were not improved-on for nearly three hundred years. By the early 20th century, Einstein developed a theory of relativity that correctly predicted the action of forces on objects with increasing momenta near the speed of light, and also provided insight into the forces produced by gravitation and inertia.",
+            "qas": [
+                {
+                    "id": "573735e8c3c5551400e51e71",
+                    "question": "What concept did philosophers in antiquity use to study simple machines?",
+                    "is_impossible": false,
+                    "answers": [
+                        {"text": "force", "answer_start": 46},
+                        {"text": "the concept of force", "answer_start": 31},
+                    ]
+                }
+            ]
+        },
+        {
+            "context": "",
+            "qas": []
+        }
+    ]
+}
+```
+
+#### 数据集大小
+
+| 数据集 | 大小   | 备注                                                         |
+| :----- | :----- | :----------------------------------------------------------- |
+| dev    | 11873  | https://rajpurkar.github.io/SQuAD-explorer/dataset/dev-v2.0.json |
+| train  | 130319 | https://rajpurkar.github.io/SQuAD-explorer/dataset/train-v2.0.json |
+
+*数据集细化后，一个question对应一条数据*
+
+## RACE (ReAding Comprehension dataset from Examinations)
+
+*RACE is a large-scale reading comprehension dataset with more than 28,000 passages and nearly 100,000 questions. The dataset is collected from English examinations in China, which are designed for middle school and high school students. The dataset can be served as the training and test sets for machine comprehension.*  初高中英语试卷阅读理解
+
+原文地址：https://paperswithcode.com/dataset/race
+
+#### 数据格式
+
+```json
+{
+	"answers": ["C", "B"],
+	"options": [
+		[
+			"his mother had no cellphone",
+			"his mother wasn't at home",
+			"he didn't take a cellphone with him",
+			"he was too frightened to call"
+		],
+		[
+			"call off the ban",
+			"continue the ban",
+			"thank the parents",
+			"allow some students to use cellphones at school"
+		]
+	],
+	"questions": [
+		"A 13-year-old student was shot with a gun after school, unable to call his mother for help, because   _  .",
+		"According to what the spokesman said, the school might   _  ."
+	],
+	"article": "New York City schoolchildren can't use cellphones at school because of Mayor Michael R. Bloomberg's ban on cellphones in schools. Many parents are opposed to Mayor Michael R. Bloomberg's ban on cellphones in schools by e-mail messages.\nThere was a 13-year-old student who was shot with a gun after school, unable to call his mother for help. There was a high school student robbed three times last year, twice in her school building. There was a girl who got a piece of glass placed in her eye during school and was saved from a possible cornea transplant   only because, having disobeyed the cellphone ban, she was able to call her mother and get an operation on time.\nThe ban has been on for years, but it set off a widespread parental outcry only in April, after some headmasters sent home letters reminding parents that cellphones are not allowed to be brought into school.\nMr Bloomberg has defended the ban, saying that cellphones are bad and often used to cheat or call in friends for fights. If something is important, he says, parents can call schools directly.\nOn the other hand, many of the e-mail messages from parents described the ban as \"cruel and heartless\", \"absurdly  wrong-headed\", \"anti-parent\", \"ridiculous\".\n\"We respect the fears that parents have,\" David Cantor, a spokesman for Schools Minister Joel I. Klein said, \"but after all the fact is that having phones in schools always leads to more problems.\"",
+	"id": "high2639.txt"
+}
+```
+
+#### 下载地址
+
+http://www.cs.cmu.edu/~glai1/data/race/RACE.tar.gz
+
+#### 数据集大小
+
+| name   | train | validation | test |
+| ------ | ----- | ---------- | ---- |
+| high   | 62445 | 3451       | 3498 |
+| middle | 25321 | 1436       | 1436 |
+| all    | 87866 | 4887       | 4934 |
+
+#### 使用方式
+
+```python
+from dataset import load_dataset
+
+dataset = load_dataset(r"C:\Train\data\RACE")
+
+dataset_test = dataset["test"]  # test/train/dev
+```
 
