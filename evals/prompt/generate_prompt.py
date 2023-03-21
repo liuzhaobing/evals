@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-import copy
 import os
 from typing import Any
 import json
@@ -14,31 +13,25 @@ logger = logging.getLogger(__name__)
 
 
 class Generate:
-    dataset = "dataset"
+    datasets = "datasets"
 
-    def __init__(self, jsonl_path: list, yaml_path: list, test_dataset_path: list):
-        """
-        jsonl_path: jsonl 输出文件名
-        yaml_path： yaml 输出文件名
-        test_dataset_path： 数据集输入路径
-        """
-        self.jsonl_path = jsonl_path
-        self.yaml_path = yaml_path
-        self.test_dataset_path = test_dataset_path
+    def __init__(self, config: list):
+        self.class_name = self.__class__.__name__
+        self.config = config
 
         # dataset的路径
-        self.dataset_path = os.path.join(os.getcwd(), "..", "..", self.dataset)
+        self.dataset_path = os.path.join(os.getcwd(), "..", "..", self.datasets)
 
         # registry路径
         self.registry_path = os.path.join(os.getcwd(), "..", "registry")
 
         # test case的输出路径  xxx.jsonl
-        this_dataset_registry_path = os.path.join(self.registry_path, "data", jsonl_path[0].split(".")[0])
+        this_dataset_registry_path = os.path.join(self.registry_path, "data", self.class_name)
         os.makedirs(this_dataset_registry_path, exist_ok=True)
-        self.this_dataset_registry_file_path = os.path.join(this_dataset_registry_path, jsonl_path[0])
+        self.this_dataset_registry_file_path = os.path.join(this_dataset_registry_path, self.class_name + ".jsonl")
 
         # test suite的输出路径  xxx.yaml
-        self.this_yaml_file_path = os.path.join(self.registry_path, "evals", yaml_path[0])
+        self.this_yaml_file_path = os.path.join(self.registry_path, "evals", self.class_name + ".yaml")
 
         # 执行
         self.generate_prompt_jsonl_batch()
@@ -63,21 +56,21 @@ class Generate:
 
     def format_one_yaml(self):  # 生成test case模板
         return f"""
-{self.jsonl_path[0].split(".")[0]}_match:
-  id: {self.jsonl_path[0].split(".")[0]}.match1.v0
+{self.class_name}_match:
+  id: {self.class_name}.match1.v0
   metrics: [accuracy]
-{self.jsonl_path[0].split(".")[0]}.match1.v0:
+{self.class_name}.match1.v0:
   class: evals.elsuite.basic.match:Match
   args:
-    samples_jsonl: {self.jsonl_path[0].split(".")[0]}/{self.jsonl_path[0]}
+    samples_jsonl: {self.class_name}/{self.class_name + ".jsonl"}
 
-{self.jsonl_path[0].split(".")[0]}_fact:
-  id: {self.jsonl_path[0].split(".")[0]}.fact1.v0
+{self.class_name}_fact:
+  id: {self.class_name}.fact1.v0
   metrics: [accuracy]
-{self.jsonl_path[0].split(".")[0]}.fact1.v0:
+{self.class_name}.fact1.v0:
   class: evals.elsuite.modelgraded.classify:ModelBasedClassify
   args:
-    samples_jsonl: {self.jsonl_path[0].split(".")[0]}/{self.jsonl_path[0]}
+    samples_jsonl: {self.class_name}/{self.class_name + ".jsonl"}
     eval_type: cot_classify
     modelgraded_spec_file: fact
 """.strip()
@@ -90,7 +83,7 @@ class WinoGrande(Generate):
         return dict(input=self.format_chat_prompt(item), ideal=item["answer"])
 
     def test_data_set_file_path(self):
-        return os.path.join(self.dataset_path, self.test_dataset_path[0], self.test_dataset_path[1])
+        return os.path.join(self.dataset_path, self.class_name, self.config[0])
 
     def read_dataset_as_list(self, this_dataset_file_path):
         """dataset读取为对象"""
@@ -114,7 +107,7 @@ class StoryCloze(Generate):
     """
 
     def test_data_set_file_path(self):
-        return os.path.join(self.dataset_path, self.test_dataset_path[0], self.test_dataset_path[1])
+        return os.path.join(self.dataset_path, self.class_name, self.config[0])
 
     def read_dataset_as_list(self, this_dataset_file_path):
         df = pd.read_csv(this_dataset_file_path)
@@ -142,9 +135,9 @@ class COPA(Generate):
 
     def test_data_set_file_path(self):
         return os.path.join(self.dataset_path,
-                            self.test_dataset_path[0],
-                            self.test_dataset_path[1],
-                            self.test_dataset_path[2])
+                            self.class_name,
+                            self.config[0],
+                            self.config[1])
 
     def read_dataset_as_list(self, dataset_file_path):
         from xml.etree.ElementTree import parse
@@ -174,7 +167,7 @@ class MultiRC(Generate):
     """
 
     def test_data_set_file_path(self):
-        return os.path.join(self.dataset_path, self.test_dataset_path[0], self.test_dataset_path[1])
+        return os.path.join(self.dataset_path, self.config[0], self.config[1])
 
     def read_dataset_as_list(self, dataset_file_path):
         return evals.get_jsonls(dataset_file_path)
@@ -190,13 +183,13 @@ class BoolQ(Generate):
     """BoolQ (Boolean Questions)"""
 
     # def test_data_set_file_path(self):
-    #     return os.path.join(self.dataset_path, self.test_dataset_path[0], self.test_dataset_path[1])
+    #     return os.path.join(self.dataset_path, self.config[0], self.config[1])
 
     # def read_dataset_as_list(self, dataset_file_path):
     #     return evals.get_jsonls(dataset_file_path)
 
     def test_data_set_file_path(self):
-        return self.test_dataset_path
+        return self.config
 
     def read_dataset_as_list(self, dataset_file_path):
         data = load_dataset(dataset_file_path[0])
@@ -216,7 +209,7 @@ class WSC(Generate):
     """WSC (Winograd Schema Challenge)"""
 
     def test_data_set_file_path(self):
-        return self.test_dataset_path
+        return self.config
 
     def read_dataset_as_list(self, dataset_file_path):
         data = load_dataset(dataset_file_path[0], dataset_file_path[1])
@@ -238,7 +231,7 @@ class COQA(Generate):
     """CoQA (Conversational Question Answering Challenge)"""
 
     def test_data_set_file_path(self):
-        return self.test_dataset_path
+        return self.config
 
     def read_dataset_as_list(self, dataset_file_path):
         data = load_dataset(dataset_file_path[0])
@@ -274,21 +267,21 @@ class COQA(Generate):
 
     def format_one_yaml(self):  # 生成test case模板
         return f"""
-{self.jsonl_path[0].split(".")[0]}_match:
-  id: {self.jsonl_path[0].split(".")[0]}.match1.v0
+{self.class_name}_match:
+  id: {self.class_name}.match1.v0
   metrics: [f1_score]
-{self.jsonl_path[0].split(".")[0]}.match1.v0:
+{self.class_name}.match1.v0:
   class: evals.elsuite.basic.match:Match
   args:
-    samples_jsonl: {self.jsonl_path[0].split(".")[0]}/{self.jsonl_path[0]}
+    samples_jsonl: {self.class_name}/{self.class_name + ".jsonl"}
 
-{self.jsonl_path[0].split(".")[0]}_fact:
-  id: {self.jsonl_path[0].split(".")[0]}.fact1.v0
+{self.class_name}_fact:
+  id: {self.class_name}.fact1.v0
   metrics: [f1_score]
-{self.jsonl_path[0].split(".")[0]}.fact1.v0:
+{self.class_name}.fact1.v0:
   class: evals.elsuite.modelgraded.classify:ModelBasedClassify
   args:
-    samples_jsonl: {self.jsonl_path[0].split(".")[0]}/{self.jsonl_path[0]}
+    samples_jsonl: {self.class_name}/{self.class_name + ".jsonl"}
     eval_type: cot_classify
     modelgraded_spec_file: fact
 """.strip()
@@ -298,7 +291,7 @@ class CNNDailyMail(Generate):
     """CNN/Daily Mail"""
 
     def test_data_set_file_path(self):
-        return self.test_dataset_path
+        return self.config
 
     def read_dataset_as_list(self, dataset_file_path):
         data = load_dataset(dataset_file_path[0], dataset_file_path[1])
@@ -316,7 +309,7 @@ class SQuAD(Generate):
     """SQuAD (Stanford Question Answering Dataset)"""
 
     def test_data_set_file_path(self):
-        return os.path.join(self.dataset_path, self.test_dataset_path[0], self.test_dataset_path[1])
+        return os.path.join(self.dataset_path, self.class_name, self.config[0])
 
     def read_dataset_as_list(self, dataset_file_path):
         with open(dataset_file_path, "r") as f:
@@ -347,11 +340,11 @@ class SQuAD(Generate):
 
 class RACE(Generate):
     def test_data_set_file_path(self):
-        return os.path.join(self.dataset_path, self.test_dataset_path[0])
+        return os.path.join(self.dataset_path, self.class_name)
 
     def read_dataset_as_list(self, dataset_file_path):
         dataset = load_dataset(dataset_file_path)
-        dataset_test = dataset[self.test_dataset_path[1]]
+        dataset_test = dataset[self.config[0]]
         return [json.loads(item["text"]) for item in dataset_test]
 
     def format_one_json(self, item):
@@ -373,27 +366,62 @@ class RACE(Generate):
         return template
 
 
+class DROP(Generate):
+    """DROP (Discrete Reasoning Over Paragraphs)"""
+
+    def test_data_set_file_path(self):
+        return self.config
+
+    def read_dataset_as_list(self, dataset_file_path):
+        dataset = load_dataset(dataset_file_path[0])
+        return [item for item in dataset[dataset_file_path[1]]]
+
+    def format_one_json(self, item):
+        return dict(input=self.format_chat_prompt(item), ideal=item["answers_spans"]["spans"])
+
+    def format_chat_prompt(self, item):
+        return [{"role": "system",
+                 "content": "TASK: Read a passage and answer the following question concisely."},
+                {"role": "system", "content": f"Passage: {item['passage']}"},
+                {"role": "user", "content": f"Question: {item['question']}"}]
+
+
+class QuAC(Generate):
+    """QuAC (Question Answering in Context)"""
+
+    def test_data_set_file_path(self):
+        return self.config
+
+    def read_dataset_as_list(self, dataset_file_path):
+        dataset = load_dataset(dataset_file_path[0])
+        return [item for item in dataset[dataset_file_path[1]]]
+
+    def format_one_json(self, item) -> dict: ...
+
+    def format_chat_prompt(self, item) -> Any: ...
+
+
 if __name__ == '__main__':
-    RACE(jsonl_path=["RACE.jsonl"], yaml_path=["RACE.yaml"], test_dataset_path=["RACE", "test"])
+    # QuAC(config=["quac", "validation"])
 
-    SQuAD(jsonl_path=["SQuAD.jsonl"], yaml_path=["SQuAD.yaml"], test_dataset_path=["SQuAD", "dev-v2.0.json"])
+    DROP(config=["drop", "validation"])
 
-    CNNDailyMail(jsonl_path=["CNNDailyMail.jsonl"], yaml_path=["CNNDailyMail.yaml"],
-                 test_dataset_path=["cnn_dailymail", "3.0.0"])
+    RACE(config=["test"])
 
-    COQA(jsonl_path=["COQA.jsonl"], yaml_path=["COQA.yaml"], test_dataset_path=["coqa"])
+    SQuAD(config=["dev-v2.0.json"])
 
-    # MultiRC(jsonl_path=["multirc.jsonl"], yaml_path=["multric.yaml"], test_dataset_path=["multric", "test.jsonl"])
+    CNNDailyMail(config=["cnn_dailymail", "3.0.0"])
 
-    WSC(jsonl_path=["WSC.jsonl"], yaml_path=["WSC.yaml"], test_dataset_path=["winograd_wsc", "wsc273"])
+    COQA(config=["coqa"])
 
-    BoolQ(jsonl_path=["BoolQ.jsonl"], yaml_path=["BoolQ.yaml"], test_dataset_path=["boolq"])
+    # MultiRC(config=["multric", "test.jsonl"])
 
-    COPA(jsonl_path=["COPA.jsonl"], yaml_path=["COPA.yaml"],
-         test_dataset_path=["COPA-resources", "datasets", "copa-dev.xml"])
+    WSC(config=["winograd_wsc", "wsc273"])
 
-    StoryCloze(jsonl_path=["story_cloze.jsonl"], yaml_path=["story_cloze.yaml"],
-               test_dataset_path=["story_cloze", "cloze_test_val__winter2018-cloze_test_ALL_val - 1 - 1.csv"])
+    BoolQ(config=["boolq"])
 
-    WinoGrande(jsonl_path=["winogrande.jsonl"], yaml_path=["winogrande.yaml"],
-               test_dataset_path=["winogrande", "dev.jsonl"])
+    COPA(config=["datasets", "copa-dev.xml"])
+
+    StoryCloze(config=["cloze_test_val__winter2018-cloze_test_ALL_val - 1 - 1.csv"])
+
+    WinoGrande(config=["dev.jsonl"])

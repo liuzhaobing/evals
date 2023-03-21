@@ -412,7 +412,7 @@ conversational, and the answers are free-form text with their corresponding evid
 }
 ```
 
-#### 数据解释
+#### 格式说明
 
 - `source`: a `string` feature.
 - `story`: a `string` feature.
@@ -536,5 +536,128 @@ from dataset import load_dataset
 dataset = load_dataset(r"C:\Train\data\RACE")
 
 dataset_test = dataset["test"]  # test/train/dev
+```
+
+## DROP (Discrete Reasoning Over Paragraphs)
+
+*DROP: A Reading Comprehension Benchmark Requiring Discrete Reasoning Over Paragraphs. . DROP is a crowdsourced, adversarially-created, 96k-question benchmark, in which a system must resolve references in a question, perhaps to multiple input positions, and perform discrete operations over them (such as addition, counting, or sorting). These operations require a much more comprehensive understanding of the content of paragraphs than what was necessary for prior datasets.*
+
+原文地址：https://paperswithcode.com/dataset/drop
+
+#### 数据格式
+
+| section_id (string) | query_id (string)                      | passage (string)                                             | question (string)                                            | answers_spans (sequence)                        |
+| :------------------ | :------------------------------------- | :----------------------------------------------------------- | :----------------------------------------------------------- | :---------------------------------------------- |
+| "nfl_2201"          | "f16c0ee7-f131-4a8b-a6ac-4d275ea68066" | "To start the season, the Lions traveled south to Tampa, Florida to take on the Tampa Bay Buccaneers. The Lions scored first in the first quarter with a 23-yard field goal by Jason Hanson. The Buccaneers tied it up with a 38-yard field goal by Connor Barth, then took the lead when Aqib Talib intercepted a pass from Matthew Stafford and ran it in 28 yards. The Lions responded with a 28-yard field goal. In the second quarter, Detroit took the lead with a 36-yard touchdown catch by Calvin Johnson, and later added more points when Tony Scheffler caught an 11-yard TD pass. Tampa Bay responded with a 31-yard field goal just before halftime. The second half was relatively quiet, with each team only scoring one touchdown. First, Detroit's Calvin Johnson caught a 1-yard pass in the third quarter. The game's final points came when Mike Williams of Tampa Bay caught a 5-yard pass. The Lions won their regular season opener for the first time since 2007" | "How many points did the buccaneers need to tie in the first?" | { "spans": [ "3" ], "types": [ "number" ] }     |
+| "nfl_2201"          | "f703d43d-73fa-4fda-8913-d81bd5569700" | "To start the season, the Lions traveled south to Tampa, Florida to take on the Tampa Bay Buccaneers. The Lions scored first in the first quarter with a 23-yard field goal by Jason Hanson. The Buccaneers tied it up with a 38-yard field goal by Connor Barth, then took the lead when Aqib Talib intercepted a pass from Matthew Stafford and ran it in 28 yards. The Lions responded with a 28-yard field goal. In the second quarter, Detroit took the lead with a 36-yard touchdown catch by Calvin Johnson, and later added more points when Tony Scheffler caught an 11-yard TD pass. Tampa Bay responded with a 31-yard field goal just before halftime. The second half was relatively quiet, with each team only scoring one touchdown. First, Detroit's Calvin Johnson caught a 1-yard pass in the third quarter. The game's final points came when Mike Williams of Tampa Bay caught a 5-yard pass. The Lions won their regular season opener for the first time since 2007" | "How long was the Lion's longest field goal?"                | { "spans": [ "28-yard" ], "types": [ "span" ] } |
+
+下载地址：https://ai2-public-datasets.s3.amazonaws.com/drop/drop_dataset.zip
+
+#### 数据集大小
+
+| 数据集     | 大小  | 备注 |
+| :--------- | :---- | :--- |
+| validation | 9535  | -    |
+| train      | 77400 | -    |
+
+#### 使用方式
+
+```python
+from datasets import load_dataset
+
+dataset = load_dataset("drop")
+
+dataset_val = dataset["validation"]  # train/validation
+```
+
+## QuAC (Question Answering in Context)
+
+*Question Answering in Context is a dataset for modeling, understanding, and participating in information seeking dialog. Data instances consist of an interactive dialog between two crowd workers: (1) a student who poses a sequence of freeform questions to learn as much as possible about a hidden Wikipedia text, and (2) a teacher who answers the questions by providing short excerpts (spans) from the text. QuAC introduces challenges not found in existing machine comprehension datasets: its questions are often more open-ended, unanswerable, or only meaningful within the dialog context.*
+
+原文地址：https://paperswithcode.com/dataset/quac
+
+#### 数据格式
+
+```json
+{
+  'dialogue_id': 'C_6abd2040a75d47168a9e4cca9ca3fed5_0',
+
+  'wikipedia_page_title': 'Satchel Paige',
+
+  'background': 'Leroy Robert "Satchel" Paige (July 7, 1906 - June 8, 1982) was an American Negro league baseball and Major League Baseball (MLB) pitcher who became a legend in his own lifetime by being known as perhaps the best pitcher in baseball history, by his longevity in the game, and by attracting record crowds wherever he pitched. Paige was a right-handed pitcher, and at age 42 in 1948, he was the oldest major league rookie while playing for the Cleveland Indians. He played with the St. Louis Browns until age 47, and represented them in the All-Star Game in 1952 and 1953.',
+
+  'section_title': 'Chattanooga and Birmingham: 1926-29',
+
+  'context': 'A former friend from the Mobile slums, Alex Herman, was the player/manager for the Chattanooga White Sox of the minor Negro Southern League. In 1926 he discovered Paige and offered to pay him $250 per month, of which Paige would collect $50 with the rest going to his mother. He also agreed to pay Lula Paige a $200 advance, and she agreed to the contract. The local newspapers--the Chattanooga News and Chattanooga Times--recognized from the beginning that Paige was special. In April 1926, shortly after his arrival, he recorded nine strikeouts over six innings against the Atlanta Black Crackers. Part way through the 1927 season, Paige\'s contract was sold to the Birmingham Black Barons of the major Negro National League (NNL). According to Paige\'s first memoir, his contract was for $450 per month, but in his second he said it was for $275. Pitching for the Black Barons, Paige threw hard but was wild and awkward. In his first big game in late June 1927, against the St. Louis Stars, Paige incited a brawl when his fastball hit the hand of St. Louis catcher Mitchell Murray. Murray then charged the mound and Paige raced for the dugout, but Murray flung his bat and struck Paige above the hip. The police were summoned, and the headline of the Birmingham Reporter proclaimed a "Near Riot." Paige improved and matured as a pitcher with help from his teammates, Sam Streeter and Harry Salmon, and his manager, Bill Gatewood. He finished the 1927 season 7-1 with 69 strikeouts and 26 walks in 89 1/3 innings. Over the next two seasons, Paige went 12-5 and 10-9 while recording 176 strikeouts in 1929. (Several sources credit his 1929 strikeout total as the all-time single-season record for the Negro leagues, though there is variation among the sources about the exact number of strikeouts.) On April 29 of that season he recorded 17 strikeouts in a game against the Cuban Stars, which exceeded what was then the major league record of 16 held by Noodles Hahn and Rube Waddell. Six days later he struck out 18 Nashville Elite Giants, a number that was tied in the white majors by Bob Feller in 1938. Due to his increased earning potential, Barons owner R. T. Jackson would "rent" Paige out to other ball clubs for a game or two to draw a decent crowd, with both Jackson and Paige taking a cut. CANNOTANSWER',
+
+  'turn_ids': ['C_6abd2040a75d47168a9e4cca9ca3fed5_0_q#0', 'C_6abd2040a75d47168a9e4cca9ca3fed5_0_q#1', 'C_6abd2040a75d47168a9e4cca9ca3fed5_0_q#2', 'C_6abd2040a75d47168a9e4cca9ca3fed5_0_q#3', 'C_6abd2040a75d47168a9e4cca9ca3fed5_0_q#4', 'C_6abd2040a75d47168a9e4cca9ca3fed5_0_q#5', 'C_6abd2040a75d47168a9e4cca9ca3fed5_0_q#6', 'C_6abd2040a75d47168a9e4cca9ca3fed5_0_q#7'],
+
+  'questions': ['what did he do in Chattanooga', 'how did he discover him', 'what position did he play', 'how did they help him', 'when did he go to Birmingham', 'how did he feel about this', 'how did he do with this team', 'What made him leave the team'],
+
+  'followups': [0, 2, 0, 1, 0, 1, 0, 1],
+
+  'yesnos': [2, 2, 2, 2, 2, 2, 2, 2]
+
+  'answers': {
+    'answer_starts': [
+      [480, 39, 0, 67, 39],
+      [2300, 2300, 2300],
+      [848, 1023, 848, 848, 1298],
+      [2300, 2300, 2300, 2300, 2300],
+      [600, 600, 600, 634, 600],
+      [2300, 2300, 2300],
+      [939, 1431, 848, 848, 1514],
+      [2106, 2106, 2165]
+    ],
+    'texts': [
+      ['April 1926, shortly after his arrival, he recorded nine strikeouts over six innings against the Atlanta Black Crackers.', 'Alex Herman, was the player/manager for the Chattanooga White Sox of the minor Negro Southern League. In 1926 he discovered Paige', 'A former friend from the Mobile slums, Alex Herman, was the player/manager for the Chattanooga White Sox of the minor Negro Southern League.', 'manager for the Chattanooga White Sox of the minor Negro Southern League. In 1926 he discovered Paige and offered to pay him $250 per month,', 'Alex Herman, was the player/manager for the Chattanooga White Sox of the minor Negro Southern League. In 1926 he discovered Paige and offered to pay him $250 per month,'],
+      ['CANNOTANSWER', 'CANNOTANSWER', 'CANNOTANSWER'],
+      ['Pitching for the Black Barons,', 'fastball', 'Pitching for', 'Pitching', 'Paige improved and matured as a pitcher with help from his teammates,'], ['CANNOTANSWER', 'CANNOTANSWER', 'CANNOTANSWER', 'CANNOTANSWER', 'CANNOTANSWER'],
+      ["Part way through the 1927 season, Paige's contract was sold to the Birmingham Black Barons", "Part way through the 1927 season, Paige's contract was sold to the Birmingham Black Barons", "Part way through the 1927 season, Paige's contract was sold to the Birmingham Black Barons", "Paige's contract was sold to the Birmingham Black Barons of the major Negro National League (NNL", "Part way through the 1927 season, Paige's contract was sold to the Birmingham Black Barons"], ['CANNOTANSWER', 'CANNOTANSWER', 'CANNOTANSWER'],
+      ['game in late June 1927, against the St. Louis Stars, Paige incited a brawl when his fastball hit the hand of St. Louis catcher Mitchell Murray.', 'He finished the 1927 season 7-1 with 69 strikeouts and 26 walks in 89 1/3 innings.', 'Pitching for the Black Barons, Paige threw hard but was wild and awkward.', 'Pitching for the Black Barons, Paige threw hard but was wild and awkward.', 'Over the next two seasons, Paige went 12-5 and 10-9 while recording 176 strikeouts in 1929. ('],
+      ['Due to his increased earning potential, Barons owner R. T. Jackson would "rent" Paige out to other ball clubs', 'Due to his increased earning potential, Barons owner R. T. Jackson would "rent" Paige out to other ball clubs for a game or two to draw a decent crowd,', 'Jackson would "rent" Paige out to other ball clubs for a game or two to draw a decent crowd, with both Jackson and Paige taking a cut.']
+    ]
+  },
+
+  'orig_answers': {
+    'answer_starts': [39, 2300, 1298, 2300, 600, 2300, 1514, 2165],
+    'texts': ['Alex Herman, was the player/manager for the Chattanooga White Sox of the minor Negro Southern League. In 1926 he discovered Paige and offered to pay him $250 per month,', 'CANNOTANSWER', 'Paige improved and matured as a pitcher with help from his teammates,', 'CANNOTANSWER', "Part way through the 1927 season, Paige's contract was sold to the Birmingham Black Barons", 'CANNOTANSWER', 'Over the next two seasons, Paige went 12-5 and 10-9 while recording 176 strikeouts in 1929. (', 'Jackson would "rent" Paige out to other ball clubs for a game or two to draw a decent crowd, with both Jackson and Paige taking a cut.']
+  },
+}
+
+```
+
+#### 格式说明
+
+- `dialogue_id`: ID of the dialogue.
+- `wikipedia_page_title`: title of the Wikipedia page.
+- `background`: first paragraph of the main Wikipedia article.
+- `section_tile`: Wikipedia section title.
+- `context`: Wikipedia section text.
+- `turn_ids`: list of identification of dialogue turns. One list of ids per dialogue.
+- `questions`: list of questions in the dialogue. One list of questions per dialogue.
+- `followups`: list of followup actions in the dialogue. One list of followups per dialogue. `y`: follow, `m`: maybe follow yp, `n`: don't follow up.
+- `yesnos`: list of yes/no in the dialogue. One list of yes/nos per dialogue. `y`: yes, `n`: no, `x`: neither.
+- `answers`: dictionary of answers to the questions (validation step of data collection)
+  - `answer_starts`: list of list of starting offsets. For training, list of single element lists (one answer per question).
+  - `texts`: list of list of span texts answering questions. For training, list of single element lists (one answer per question).
+- `orig_answers`: dictionary of original answers (the ones provided by the teacher in the dialogue)
+  - `answer_starts`: list of starting offsets
+  - `texts`: list of span texts answering questions.
+
+#### 数据集大小
+
+| 数据集 | 大小  | 备注 |
+| :----- | :---- | :--- |
+| dev    | 1000  | -    |
+| train  | 11567 | -    |
+
+#### 使用方式
+
+```python
+from datasets import load_dataset
+
+dataset = load_dataset("quac")
+dataset_val = dataset["validation"]  # train/validation
 ```
 
