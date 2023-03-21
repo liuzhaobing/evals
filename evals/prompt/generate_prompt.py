@@ -1,6 +1,5 @@
 # -*- coding:utf-8 -*-
 import os
-from typing import Any
 import json
 
 import jsonlines
@@ -8,19 +7,28 @@ import evals
 import logging
 import pandas as pd
 from datasets import load_dataset
+from xml.etree.ElementTree import parse
 
 logger = logging.getLogger(__name__)
 
 
 class Generate:
     datasets = "datasets"
+    downloads = "downloads"
 
     def __init__(self, config: list):
+        self.labels = ["validation", "train", "test"]
         self.class_name = self.__class__.__name__
         self.config = config
 
         # dataset的路径
         self.dataset_path = os.path.join(os.getcwd(), "..", "..", self.datasets)
+        self.this_dataset_path = os.path.join(self.dataset_path, self.class_name)
+        os.makedirs(self.this_dataset_path, exist_ok=True)
+
+        # downloads的路径
+        self.downloads_path = os.path.join(os.getcwd(), "..", "..", self.downloads)
+        self.this_download_path = os.path.join(self.downloads_path, self.class_name)
 
         # registry路径
         self.registry_path = os.path.join(os.getcwd(), "..", "registry")
@@ -37,24 +45,43 @@ class Generate:
         self.generate_prompt_jsonl_batch()
         self.generate_evals_yaml_batch()
 
-    def test_data_set_file_path(self): ...  # 获取数据集源文件加载地址 或者hugging face 地址
+    def extract_and_save_datasets(self):
+        """将原生格式转译为jsonl格式文件并存储到本地 datasets 目录"""
+        raise ValueError("no such function named extract_and_save_datasets")
 
-    def read_dataset_as_list(self, dataset_file_path) -> Any: ...  # 读取数据集为嵌套字典的列表
+    def test_data_set_file_path(self):
+        """返回eval评估的数据集文件地址"""
+        return os.path.join(self.this_dataset_path, self.config[0] + ".jsonl")
 
-    def format_chat_prompt(self, item) -> Any: ...  # 生成一条prompt模板
+    def read_dataset_as_list(self, dataset_file_path):
+        """读取数据集为对象"""
+        if not os.path.exists(dataset_file_path):
+            self.extract_and_save_datasets()
+        if os.path.exists(dataset_file_path):
+            return evals.get_jsonls(dataset_file_path)
+        raise ValueError(f"no such subset named {self.config}]")
 
-    def format_one_json(self, item) -> dict: ...  # 生成一条jsonl
+    def format_chat_prompt(self, item):
+        """生成一条prompt模板"""
+        raise ValueError("no such function named format_chat_prompt")
 
-    def generate_prompt_jsonl_batch(self):  # 写jsonl文件
+    def format_one_json(self, item):
+        """生成一条jsonl"""
+        raise ValueError("no such function named format_one_json")
+
+    def generate_prompt_jsonl_batch(self):
+        """写jsonl文件"""
         with jsonlines.open(self.this_dataset_registry_file_path, "w") as f:
             for item in self.read_dataset_as_list(self.test_data_set_file_path()):
                 f.write(self.format_one_json(item))
 
-    def generate_evals_yaml_batch(self):  # 写yaml文件
+    def generate_evals_yaml_batch(self):
+        """写yaml文件"""
         with open(self.this_yaml_file_path, "w") as f:
             f.write(self.format_one_yaml())
 
-    def format_one_yaml(self):  # 生成test case模板
+    def format_one_yaml(self):
+        """生成test case模板"""
         return f"""
 {self.class_name}_match:
   id: {self.class_name}.match1.v0
@@ -79,15 +106,15 @@ class Generate:
 class WinoGrande(Generate):
     """https://github.com/allenai/winogrande 先手动下载"""
 
+    def extract_and_save_datasets(self):
+        resolve = {"test": "test.jsonl", "train": "train_l.jsonl", "validation": "dev.jsonl"}
+        for label, filename in resolve.items():
+            with jsonlines.open(os.path.join(self.this_dataset_path, label + ".jsonl"), "w") as f:
+                for i in evals.get_jsonls(os.path.join(self.this_download_path, filename)):
+                    f.write(i)
+
     def format_one_json(self, item):
         return dict(input=self.format_chat_prompt(item), ideal=item["answer"])
-
-    def test_data_set_file_path(self):
-        return os.path.join(self.dataset_path, self.class_name, self.config[0])
-
-    def read_dataset_as_list(self, this_dataset_file_path):
-        """dataset读取为对象"""
-        return evals.get_jsonls(this_dataset_file_path)
 
     def format_chat_prompt(self, item):
         return [{"role": "system",
@@ -98,21 +125,17 @@ class WinoGrande(Generate):
 
 
 class StoryCloze(Generate):
-    """Story Cloze Test Winter 2018 (recommended) set:
-        \* val set: https://goo.gl/XWjas1
-        \* test set: https://goo.gl/BcTtB4
-       Story Cloze Test Spring 2016 set:
-        \* val set: https://goo.gl/cDmS6I
-        \* test set: https://goo.gl/iE31Qm
-    """
+    """Story Cloze Test Winter 2018"""
 
-    def test_data_set_file_path(self):
-        return os.path.join(self.dataset_path, self.class_name, self.config[0])
-
-    def read_dataset_as_list(self, this_dataset_file_path):
-        df = pd.read_csv(this_dataset_file_path)
-        head_list = list(df.columns)
-        return [dict(zip(head_list, line)) for line in df.values]
+    def extract_and_save_datasets(self):
+        resolve = {"test": "cloze_test_test__winter2018-cloze_test_ALL_test - 1.csv",
+                   "validation": "cloze_test_val__winter2018-cloze_test_ALL_val - 1 - 1.csv"}
+        for label, filename in resolve.items():
+            df = pd.read_csv(os.path.join(self.this_download_path, filename))
+            head_list = list(df.columns)
+            with jsonlines.open(os.path.join(self.this_dataset_path, label + ".jsonl"), "w") as f:
+                for line in df.values:
+                    f.write(dict(zip(head_list, line)))
 
     def format_one_json(self, item):
         return dict(input=self.format_chat_prompt(item), ideal=item["AnswerRightEnding"])
@@ -133,21 +156,18 @@ class COPA(Generate):
     https://people.ict.usc.edu/~gordon/copa.html
     """
 
-    def test_data_set_file_path(self):
-        return os.path.join(self.dataset_path,
-                            self.class_name,
-                            self.config[0],
-                            self.config[1])
-
-    def read_dataset_as_list(self, dataset_file_path):
-        from xml.etree.ElementTree import parse
-        document = parse(dataset_file_path)
-        return [dict(id=item.attrib["id"],
-                     asks_for=item.attrib["asks-for"],
-                     most_plausible_alternative=item.attrib["most-plausible-alternative"],
-                     p=item.findtext('p'),
-                     a1=item.findtext('a1'),
-                     a2=item.findtext('a2')) for item in document.iterfind('item')]
+    def extract_and_save_datasets(self):
+        resolve = {"test": ["datasets", "copa-test.xml"], "validation": ["datasets", "copa-dev.xml"]}
+        for label, filename in resolve.items():
+            document = parse(os.path.join(self.this_download_path, filename[0], filename[1]))
+            with jsonlines.open(os.path.join(self.this_dataset_path, label + ".jsonl"), "w") as f:
+                for item in document.iterfind("item"):
+                    f.write(dict(id=item.attrib["id"],
+                                 asks_for=item.attrib["asks-for"],
+                                 most_plausible_alternative=item.attrib["most-plausible-alternative"],
+                                 p=item.findtext('p'),
+                                 a1=item.findtext('a1'),
+                                 a2=item.findtext('a2')))
 
     def format_one_json(self, item):
         return dict(input=self.format_chat_prompt(item), ideal=item["most_plausible_alternative"])
@@ -166,17 +186,22 @@ class MultiRC(Generate):
     http://www.eraserbenchmark.com/zipped/multirc.tar.gz
     """
 
-    def test_data_set_file_path(self):
-        return os.path.join(self.dataset_path, self.config[0], self.config[1])
-
-    def read_dataset_as_list(self, dataset_file_path):
-        return evals.get_jsonls(dataset_file_path)
+    def extract_and_save_datasets(self):
+        resolve = {"test": "test.jsonl", "validation": "val.jsonl", "train": "train.jsonl"}
+        for label, filename in resolve.items():
+            with jsonlines.open(os.path.join(self.this_dataset_path, label + ".jsonl"), "w") as f:
+                for i in evals.get_jsonls(os.path.join(self.this_download_path, filename)):
+                    # 把文章内容读取出来 存放到 story_content
+                    with open(os.path.join(self.this_download_path, "docs", i["annotation_id"].split(":")[0]),
+                              "r", encoding="UTF-8") as story:
+                        i["story_content"] = story.read()
+                    f.write(i)
 
     def format_one_json(self, item):
-        return []
+        return {}
 
     def format_chat_prompt(self, item):
-        return []  # TODO
+        return []
 
 
 class BoolQ(Generate):
@@ -188,12 +213,13 @@ class BoolQ(Generate):
     # def read_dataset_as_list(self, dataset_file_path):
     #     return evals.get_jsonls(dataset_file_path)
 
-    def test_data_set_file_path(self):
-        return self.config
-
-    def read_dataset_as_list(self, dataset_file_path):
-        data = load_dataset(dataset_file_path[0])
-        return [item for item in data['validation']]
+    def extract_and_save_datasets(self):
+        dataset = load_dataset("boolq")
+        for label in self.labels:
+            if dataset.__contains__(label):
+                with jsonlines.open(os.path.join(self.this_dataset_path, label + ".jsonl"), "w") as f:
+                    for item in dataset[label]:
+                        f.write(item)
 
     def format_one_json(self, item):
         return dict(input=self.format_chat_prompt(item), ideal=str(item["answer"]))
@@ -208,12 +234,13 @@ class BoolQ(Generate):
 class WSC(Generate):
     """WSC (Winograd Schema Challenge)"""
 
-    def test_data_set_file_path(self):
-        return self.config
-
-    def read_dataset_as_list(self, dataset_file_path):
-        data = load_dataset(dataset_file_path[0], dataset_file_path[1])
-        return [item for item in data['test']]
+    def extract_and_save_datasets(self):
+        dataset = load_dataset("winograd_wsc", "wsc285")
+        for label in self.labels:
+            if dataset.__contains__(label):
+                with jsonlines.open(os.path.join(self.this_dataset_path, label + ".jsonl"), "w") as f:
+                    for item in dataset[label]:
+                        f.write(item)
 
     def format_one_json(self, item):
         return dict(input=self.format_chat_prompt(item), ideal=str(item["label"]))
@@ -230,12 +257,13 @@ class WSC(Generate):
 class COQA(Generate):
     """CoQA (Conversational Question Answering Challenge)"""
 
-    def test_data_set_file_path(self):
-        return self.config
-
-    def read_dataset_as_list(self, dataset_file_path):
-        data = load_dataset(dataset_file_path[0])
-        return [item for item in data['validation']]
+    def extract_and_save_datasets(self):
+        dataset = load_dataset("coqa")
+        for label in self.labels:
+            if dataset.__contains__(label):
+                with jsonlines.open(os.path.join(self.this_dataset_path, label + ".jsonl"), "w") as f:
+                    for item in dataset[label]:
+                        f.write(item)
 
     def format_one_json(self, item):
         return dict(input=self.format_chat_prompt(item), ideal=[item['answers']['input_text'][-1]])
@@ -290,12 +318,13 @@ class COQA(Generate):
 class CNNDailyMail(Generate):
     """CNN/Daily Mail"""
 
-    def test_data_set_file_path(self):
-        return self.config
-
-    def read_dataset_as_list(self, dataset_file_path):
-        data = load_dataset(dataset_file_path[0], dataset_file_path[1])
-        return [item for item in data['test']]
+    def extract_and_save_datasets(self):
+        dataset = load_dataset("cnn_dailymail", "3.0.0")
+        for label in self.labels:
+            if dataset.__contains__(label):
+                with jsonlines.open(os.path.join(self.this_dataset_path, label + ".jsonl"), "w") as f:
+                    for item in dataset[label]:
+                        f.write(item)
 
     def format_one_json(self, item):
         return dict(input=self.format_chat_prompt(item), ideal=item["highlights"])
@@ -308,20 +337,18 @@ class CNNDailyMail(Generate):
 class SQuAD(Generate):
     """SQuAD (Stanford Question Answering Dataset)"""
 
-    def test_data_set_file_path(self):
-        return os.path.join(self.dataset_path, self.class_name, self.config[0])
-
-    def read_dataset_as_list(self, dataset_file_path):
-        with open(dataset_file_path, "r") as f:
-            file_content = json.load(f)
-        items = []
-        for i in file_content["data"]:
-            for j in i["paragraphs"]:
-                for k in j["qas"]:
-                    k["context"] = j["context"]
-                    k["title"] = i["title"]
-                    items.append(k)
-        return items
+    def extract_and_save_datasets(self):
+        resolve = {"train": "train-v2.0.json", "validation": "dev-v2.0.json"}
+        for label, filename in resolve.items():
+            with open(os.path.join(self.this_download_path, filename), "r") as f:
+                file_content = json.load(f)
+            with jsonlines.open(os.path.join(self.this_dataset_path, label + ".jsonl"), "w") as f:
+                for i in file_content["data"]:
+                    for j in i["paragraphs"]:
+                        for k in j["qas"]:
+                            k["context"] = j["context"]
+                            k["title"] = i["title"]
+                            f.write(k)
 
     def format_one_json(self, item):
         if not item["is_impossible"]:
@@ -339,13 +366,14 @@ class SQuAD(Generate):
 
 
 class RACE(Generate):
-    def test_data_set_file_path(self):
-        return os.path.join(self.dataset_path, self.class_name)
 
-    def read_dataset_as_list(self, dataset_file_path):
-        dataset = load_dataset(dataset_file_path)
-        dataset_test = dataset[self.config[0]]
-        return [json.loads(item["text"]) for item in dataset_test]
+    def extract_and_save_datasets(self):
+        dataset = load_dataset(self.this_download_path)
+        for label in self.labels:
+            if dataset.__contains__(label):
+                with jsonlines.open(os.path.join(self.this_dataset_path, label + ".jsonl"), "w") as f:
+                    for item in dataset[label]:
+                        f.write(json.loads(item["text"]))
 
     def format_one_json(self, item):
         return dict(input=self.format_chat_prompt(item), ideal=item['answers'])
@@ -369,12 +397,13 @@ class RACE(Generate):
 class DROP(Generate):
     """DROP (Discrete Reasoning Over Paragraphs)"""
 
-    def test_data_set_file_path(self):
-        return self.config
-
-    def read_dataset_as_list(self, dataset_file_path):
-        dataset = load_dataset(dataset_file_path[0])
-        return [item for item in dataset[dataset_file_path[1]]]
+    def extract_and_save_datasets(self):
+        dataset = load_dataset("drop")
+        for label in self.labels:
+            if dataset.__contains__(label):
+                with jsonlines.open(os.path.join(self.this_dataset_path, label + ".jsonl"), "w") as f:
+                    for item in dataset[label]:
+                        f.write(item)
 
     def format_one_json(self, item):
         return dict(input=self.format_chat_prompt(item), ideal=item["answers_spans"]["spans"])
@@ -389,39 +418,42 @@ class DROP(Generate):
 class QuAC(Generate):
     """QuAC (Question Answering in Context)"""
 
-    def test_data_set_file_path(self):
-        return self.config
+    def extract_and_save_datasets(self):
+        dataset = load_dataset("quac")
+        for label in self.labels:
+            if dataset.__contains__(label):
+                with jsonlines.open(os.path.join(self.this_dataset_path, label + ".jsonl"), "w") as f:
+                    for item in dataset[label]:
+                        f.write(item)
 
-    def read_dataset_as_list(self, dataset_file_path):
-        dataset = load_dataset(dataset_file_path[0])
-        return [item for item in dataset[dataset_file_path[1]]]
+    def format_one_json(self, item):
+        return {}
 
-    def format_one_json(self, item) -> dict: ...
-
-    def format_chat_prompt(self, item) -> Any: ...
+    def format_chat_prompt(self, item):
+        return []
 
 
 if __name__ == '__main__':
-    # QuAC(config=["quac", "validation"])
+    # QuAC(config=["validation"])  # train/validation
 
-    DROP(config=["drop", "validation"])
+    DROP(config=["validation"])  # train/validation
 
-    RACE(config=["test"])
+    RACE(config=["test"])  # test/train/validation
 
-    SQuAD(config=["dev-v2.0.json"])
+    SQuAD(config=["validation"])  # train/validation
 
-    CNNDailyMail(config=["cnn_dailymail", "3.0.0"])
+    CNNDailyMail(config=["test"])  # test/train/validation
 
-    COQA(config=["coqa"])
+    COQA(config=["validation"])  # train/validation
 
-    # MultiRC(config=["multric", "test.jsonl"])
+    # MultiRC(config=["test"])  # test
 
-    WSC(config=["winograd_wsc", "wsc273"])
+    WSC(config=["test"])  # test
 
-    BoolQ(config=["boolq"])
+    BoolQ(config=["validation"])  # train/validation
 
-    COPA(config=["datasets", "copa-dev.xml"])
+    COPA(config=["test"])  # test/validation
 
-    StoryCloze(config=["cloze_test_val__winter2018-cloze_test_ALL_val - 1 - 1.csv"])
+    StoryCloze(config=["validation"])  # test(无答案)/validation
 
-    WinoGrande(config=["dev.jsonl"])
+    WinoGrande(config=["test"])  # test/train/validation
