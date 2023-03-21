@@ -661,3 +661,19 @@ dataset = load_dataset("quac")
 dataset_val = dataset["validation"]  # train/validation
 ```
 
+## **ReCoRD (Reading Comprehension with Commonsense Reasoning Dataset)**
+
+*Reading Comprehension with Commonsense Reasoning Dataset (ReCoRD) is a large-scale reading comprehension dataset which requires commonsense reasoning. ReCoRD consists of queries automatically generated from CNN/Daily Mail news articles; the answer to each query is a text span from a summarizing passage of the corresponding news. The goal of ReCoRD is to evaluate a machine's ability of commonsense reasoning in reading comprehension. ReCoRD is pronounced as [ˈrɛkərd].*
+
+原文地址：https://paperswithcode.com/dataset/record
+
+#### 下载地址
+
+https://sheng-z.github.io/ReCoRD-explorer/
+
+#### 数据集大小
+
+| 数据集 | 大小  | 备注                                                         |
+| :----- | :---- | :----------------------------------------------------------- |
+| dev    | 7481  | https://drive.google.com/file/d/1WNaxBpXEGgPbymTzyN249P4ub-uU5dkO/view?usp=sharing |
+| train  | 65709 | https://drive.google.com/file/d/1PoHmphyH79pETNws8kU2OwuerU7SWLHj/view?usp=sharing |

@@ -198,9 +198,11 @@ class MultiRC(Generate):
                     f.write(i)
 
     def format_one_json(self, item):
+        # TODO
         return {}
 
     def format_chat_prompt(self, item):
+        # TODO
         return []
 
 
@@ -366,6 +368,7 @@ class SQuAD(Generate):
 
 
 class RACE(Generate):
+    """RACE (ReAding Comprehension dataset from Examinations)"""
 
     def extract_and_save_datasets(self):
         dataset = load_dataset(self.this_download_path)
@@ -409,8 +412,7 @@ class DROP(Generate):
         return dict(input=self.format_chat_prompt(item), ideal=item["answers_spans"]["spans"])
 
     def format_chat_prompt(self, item):
-        return [{"role": "system",
-                 "content": "TASK: Read a passage and answer the following question concisely."},
+        return [{"role": "system", "content": "TASK: Read a passage and answer the following question concisely."},
                 {"role": "system", "content": f"Passage: {item['passage']}"},
                 {"role": "user", "content": f"Question: {item['question']}"}]
 
@@ -427,14 +429,39 @@ class QuAC(Generate):
                         f.write(item)
 
     def format_one_json(self, item):
+        # TODO
         return {}
 
     def format_chat_prompt(self, item):
+        # TODO
+        return []
+
+
+class ReCoRD(Generate):
+    """ReCoRD (Reading Comprehension with Commonsense Reasoning Dataset)"""
+    def extract_and_save_datasets(self):
+        resolve = {"train": "train.json", "validation": "dev.json"}
+        for label, filename in resolve.items():
+            with open(os.path.join(self.this_download_path, filename), "r", encoding="UTF-8") as f:
+                file_content = json.load(f)
+            with jsonlines.open(os.path.join(self.this_dataset_path, label+".jsonl"), "w") as jsonf:
+                for content in file_content["data"]:
+                    jsonf.write(content)
+
+    def format_one_json(self, item):
+        # TODO
+        return {}
+
+    def format_chat_prompt(self, item):
+        # TODO
         return []
 
 
 if __name__ == '__main__':
-    # QuAC(config=["validation"])  # train/validation
+
+    ReCoRD(config=["validation"])  # train/validation
+
+    QuAC(config=["validation"])  # train/validation
 
     DROP(config=["validation"])  # train/validation
 
@@ -446,7 +473,7 @@ if __name__ == '__main__':
 
     COQA(config=["validation"])  # train/validation
 
-    # MultiRC(config=["test"])  # test
+    MultiRC(config=["test"])  # test
 
     WSC(config=["test"])  # test
 
@@ -456,4 +483,4 @@ if __name__ == '__main__':
 
     StoryCloze(config=["validation"])  # test(无答案)/validation
 
-    WinoGrande(config=["test"])  # test/train/validation
+    WinoGrande(config=["validation"])  # test(无答案)/train/validation
