@@ -1,3 +1,15 @@
+# 目录
+
+1.源数据下载存储目录 `../gptbenchmark/downloads`
+
+2.datasets统一转译成jsonl存储目录 `../gptbenchmark/datasets`
+
+3.用例jsonl存储目录 `../gptbenchmark/evals/registry/data/xxx`
+
+4.测试套件存储目录 `../gptbenchmark/evals/registry/evals/xxx.yaml` 或 `../gptbenchmark/evals/registry/eval_sets/xxx.yaml`
+
+说明：文件夹名/文件名/类名统一
+
 ## story_cloze
 
 *'Story Cloze Test' is a new commonsense reasoning framework for evaluating story understanding, story generation, and
