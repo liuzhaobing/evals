@@ -361,15 +361,79 @@ class ReCoRD(Generate):
                     jsonf.write(content)
 
     def format_one_json(self, item):
-        # TODO
+        return dict(input=self.format_chat_prompt(item),
+                    ideal=[[answer["text"] for answer in q["answers"]] for q in item["qas"]])
+
+    def format_chat_prompt(self, item):
+        template = [
+            {"role": "system", "content": "TASK: Read a news and answer the following questions one by one concisely."},
+            {"role": "system", "content": f"News: {item['passage']['text']}"}]
+        for q in item["qas"]:
+            template.append({"role": "user", "content": f"Question: {q['query']}"})
+        return template
+
+
+class WiC(Generate):
+    """WiC (Words in Context)"""
+
+    def extract_and_save_datasets(self):
+        resolve = {"train": ["train", ["train.data.txt", "train.gold.txt"]],
+                   "validation": ["dev", ["dev.data.txt", "dev.gold.txt"]],
+                   "test": ["test", ["test.data.txt", "test.gold.txt"]]}
+        for label, filename in resolve.items():
+            with open(os.path.join(self.this_download_path, filename[0], filename[1][1]), "r", encoding="UTF-8") as f:
+                answer_content = f.readlines()
+
+            with open(os.path.join(self.this_download_path, filename[0], filename[1][0]), "r", encoding="UTF-8") as f:
+                question_content = f.readlines()
+
+            with jsonlines.open(os.path.join(self.this_dataset_path, label + ".jsonl"), "w") as jsonf:
+                for q in question_content:
+                    q_content = q.strip().split("\t")
+                    jsonf.write(dict(
+                        lemma=q_content[0],  # 需要消歧的词的原型
+                        pos=q_content[1],  # 需要消歧的词的词性
+                        start1_start2=q_content[2],  # 0-2 其中0代表词在第一个句子中的单词索引 2代表词在第二个句子中的单词索引
+                        setence1=q_content[3],  # 第一个句子
+                        setence2=q_content[4],  # 第二个句子
+                        label=answer_content[question_content.index(q)].strip(),  # 词在两个句子中的意思是否相同 取值为True或False
+                    ))
+
+    def format_one_json(self, item):
+        return dict(input=self.format_chat_prompt(item), ideal=True if item["label"] == 'T' else False)
+
+    def format_chat_prompt(self, item):
+        return [{"role": "system",
+                 "content": "TASK: Whether two sentences containing the same verb or noun have the same meaning? Please answer with a single word 'True' or 'False' only."},
+                {"role": "system", "content": f"Sentence 1: {item['setence1']}"},
+                {"role": "system", "content": f"Sentence 2: {item['setence2']}"},
+                {"role": "system", "content": f"Lemma: {item['lemma']}."},
+                {"role": "system", "content": f"Pos: {'Verb' if item['pos'] == 'V' else 'Noun'}."}]
+
+
+class HumanEval(Generate):
+    """HumanEval"""
+
+    def extract_and_save_datasets(self):
+        dataset = load_dataset("openai_humaneval")
+        for label in self.labels:
+            if dataset.__contains__(label):
+                with jsonlines.open(os.path.join(self.this_dataset_path, label + ".jsonl"), "w") as f:
+                    for item in dataset[label]:
+                        f.write(item)
+
+    def format_one_json(self, item):
         return {}
 
     def format_chat_prompt(self, item):
-        # TODO
         return []
 
 
 if __name__ == '__main__':
+    HumanEval(config=["test"])  # test
+
+    WiC(config=["test"])  # test/train/validation
+
     ReCoRD(config=["validation"])  # train/validation
 
     QuAC(config=["validation"])  # train/validation
