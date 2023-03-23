@@ -1,6 +1,9 @@
 # -*- coding:utf-8 -*-
 import os
 import json
+import tarfile
+import urllib.request
+import zipfile
 
 import jsonlines
 import evals
@@ -15,13 +18,20 @@ logger = logging.getLogger(__name__)
 
 
 class WinoGrande(Generate):
-    """https://github.com/allenai/winogrande 先手动下载"""
+    """WinoGrande"""
+    d_url = "https://storage.googleapis.com/ai2-mosaic/public/winogrande/winogrande_1.1.zip"
 
     def extract_and_save_datasets(self):
+        os.makedirs(self.this_download_path, exist_ok=True)
+        this_download_filename = os.path.join(self.this_download_path, self.class_name + ".zip")
+        urllib.request.urlretrieve(self.d_url, this_download_filename)
+        with zipfile.ZipFile(this_download_filename) as zip_ref:
+            zip_ref.extractall(self.this_download_path)
+        os.remove(this_download_filename)
         resolve = {"test": "test.jsonl", "train": "train_l.jsonl", "validation": "dev.jsonl"}
         for label, filename in resolve.items():
             with jsonlines.open(os.path.join(self.this_dataset_path, label + ".jsonl"), "w") as f:
-                for i in evals.get_jsonls(os.path.join(self.this_download_path, filename)):
+                for i in evals.get_jsonls(os.path.join(self.this_download_path, "winogrande_1.1", filename)):
                     f.write(i)
 
     def format_one_json(self, item):
@@ -39,10 +49,12 @@ class StoryCloze(Generate):
     """Story Cloze Test Winter 2018"""
 
     def extract_and_save_datasets(self):
-        resolve = {"test": "cloze_test_test__winter2018-cloze_test_ALL_test - 1.csv",
-                   "validation": "cloze_test_val__winter2018-cloze_test_ALL_val - 1 - 1.csv"}
+        resolve = {"test": "https://goo.gl/BcTtB4", "validation": "https://goo.gl/XWjas1"}
         for label, filename in resolve.items():
-            df = pd.read_csv(os.path.join(self.this_download_path, filename))
+            os.makedirs(self.this_download_path, exist_ok=True)
+            this_download_filename = os.path.join(self.this_download_path, self.class_name + ".csv")
+            urllib.request.urlretrieve(filename, this_download_filename)
+            df = pd.read_csv(this_download_filename)
             head_list = list(df.columns)
             with jsonlines.open(os.path.join(self.this_dataset_path, label + ".jsonl"), "w") as f:
                 for line in df.values:
@@ -66,11 +78,18 @@ class COPA(Generate):
     """COPA (Choice of Plausible Alternatives)
     https://people.ict.usc.edu/~gordon/copa.html
     """
+    d_url = "https://people.ict.usc.edu/~gordon/downloads/COPA-resources.tgz"
 
     def extract_and_save_datasets(self):
-        resolve = {"test": ["datasets", "copa-test.xml"], "validation": ["datasets", "copa-dev.xml"]}
+        os.makedirs(self.this_download_path, exist_ok=True)
+        this_download_filename = os.path.join(self.this_download_path, self.class_name + ".tgz")
+        urllib.request.urlretrieve(self.d_url, this_download_filename)
+        with tarfile.open(this_download_filename, "r:gz") as tar:
+            tar.extractall(self.this_download_path)
+        os.remove(this_download_filename)
+        resolve = {"test": "copa-test.xml", "validation": "copa-dev.xml"}
         for label, filename in resolve.items():
-            document = parse(os.path.join(self.this_download_path, filename[0], filename[1]))
+            document = parse(os.path.join(self.this_download_path, "COPA-resources", "datasets", filename))
             with jsonlines.open(os.path.join(self.this_dataset_path, label + ".jsonl"), "w") as f:
                 for item in document.iterfind("item"):
                     f.write(dict(id=item.attrib["id"],
@@ -93,17 +112,22 @@ class COPA(Generate):
 
 
 class MultiRC(Generate):
-    """MultiRC (Multi-Sentence Reading Comprehension)
-    http://www.eraserbenchmark.com/zipped/multirc.tar.gz
-    """
+    """MultiRC (Multi-Sentence Reading Comprehension)"""
+    d_url = "http://www.eraserbenchmark.com/zipped/multirc.tar.gz"
 
     def extract_and_save_datasets(self):
+        os.makedirs(self.this_download_path, exist_ok=True)
+        this_download_filename = os.path.join(self.this_download_path, self.class_name + ".tgz")
+        urllib.request.urlretrieve(self.d_url, this_download_filename)
+        with tarfile.open(this_download_filename, "r:gz") as tar:
+            tar.extractall(self.this_download_path)
+        os.remove(this_download_filename)
         resolve = {"test": "test.jsonl", "validation": "val.jsonl", "train": "train.jsonl"}
         for label, filename in resolve.items():
             with jsonlines.open(os.path.join(self.this_dataset_path, label + ".jsonl"), "w") as f:
-                for i in evals.get_jsonls(os.path.join(self.this_download_path, filename)):
+                for i in evals.get_jsonls(os.path.join(self.this_download_path, "multirc", filename)):
                     # 把文章内容读取出来 存放到 story_content
-                    with open(os.path.join(self.this_download_path, "docs", i["annotation_id"].split(":")[0]),
+                    with open(os.path.join(self.this_download_path, "multirc", "docs", i["annotation_id"].split(":")[0]),
                               "r", encoding="UTF-8") as story:
                         i["story_content"] = story.read()
                     f.write(i)
@@ -251,9 +275,13 @@ class SQuAD(Generate):
     """SQuAD (Stanford Question Answering Dataset)"""
 
     def extract_and_save_datasets(self):
-        resolve = {"train": "train-v2.0.json", "validation": "dev-v2.0.json"}
+        resolve = {"train": "https://rajpurkar.github.io/SQuAD-explorer/dataset/train-v2.0.json",
+                   "validation": "https://rajpurkar.github.io/SQuAD-explorer/dataset/dev-v2.0.json"}
         for label, filename in resolve.items():
-            with open(os.path.join(self.this_download_path, filename), "r") as f:
+            os.makedirs(self.this_download_path, exist_ok=True)
+            this_download_filename = os.path.join(self.this_download_path, label + ".json")
+            urllib.request.urlretrieve(filename, this_download_filename)
+            with open(this_download_filename, "r") as f:
                 file_content = json.load(f)
             with jsonlines.open(os.path.join(self.this_dataset_path, label + ".jsonl"), "w") as f:
                 for i in file_content["data"]:
@@ -280,8 +308,15 @@ class SQuAD(Generate):
 
 class RACE(Generate):
     """RACE (ReAding Comprehension dataset from Examinations)"""
+    d_url = "http://www.cs.cmu.edu/~glai1/data/race/RACE.tar.gz"
 
     def extract_and_save_datasets(self):
+        os.makedirs(self.this_download_path, exist_ok=True)
+        this_download_filename = os.path.join(self.this_download_path, self.class_name + ".tar.gz")
+        urllib.request.urlretrieve(self.d_url, this_download_filename)
+        with tarfile.open(this_download_filename, "r:gz") as tar:
+            tar.extractall(self.this_download_path)
+        os.remove(this_download_filename)
         dataset = load_dataset(self.this_download_path)
         for label in self.labels:
             if dataset.__contains__(label):
@@ -350,8 +385,15 @@ class QuAC(Generate):
 
 class ReCoRD(Generate):
     """ReCoRD (Reading Comprehension with Commonsense Reasoning Dataset)"""
+    d_url = "https://raw.githubusercontent.com/liuzhaobing/NLP/main/datasets/ReCoRD.zip"
 
     def extract_and_save_datasets(self):
+        os.makedirs(self.this_download_path, exist_ok=True)
+        this_download_filename = os.path.join(self.this_download_path, self.class_name + ".zip")
+        urllib.request.urlretrieve(self.d_url, this_download_filename)
+        with zipfile.ZipFile(this_download_filename) as zip_ref:
+            zip_ref.extractall(self.this_download_path)
+        os.remove(this_download_filename)
         resolve = {"train": "train.json", "validation": "dev.json"}
         for label, filename in resolve.items():
             with open(os.path.join(self.this_download_path, filename), "r", encoding="UTF-8") as f:
@@ -375,8 +417,15 @@ class ReCoRD(Generate):
 
 class WiC(Generate):
     """WiC (Words in Context)"""
+    d_url = "https://pilehvar.github.io/wic/package/WiC_dataset.zip"
 
     def extract_and_save_datasets(self):
+        os.makedirs(self.this_download_path, exist_ok=True)
+        this_download_filename = os.path.join(self.this_download_path, self.class_name + ".zip")
+        urllib.request.urlretrieve(self.d_url, this_download_filename)
+        with zipfile.ZipFile(this_download_filename) as zip_ref:
+            zip_ref.extractall(self.this_download_path)
+        os.remove(this_download_filename)
         resolve = {"train": ["train", ["train.data.txt", "train.gold.txt"]],
                    "validation": ["dev", ["dev.data.txt", "dev.gold.txt"]],
                    "test": ["test", ["test.data.txt", "test.gold.txt"]]}
