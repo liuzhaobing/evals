@@ -689,3 +689,76 @@ https://sheng-z.github.io/ReCoRD-explorer/
 | :----- | :---- | :----------------------------------------------------------- |
 | dev    | 7481  | https://drive.google.com/file/d/1WNaxBpXEGgPbymTzyN249P4ub-uU5dkO/view?usp=sharing |
 | train  | 65709 | https://drive.google.com/file/d/1PoHmphyH79pETNws8kU2OwuerU7SWLHj/view?usp=sharing |
+
+## WiC (Words in Context)
+
+*WiC is a benchmark for the evaluation of context-sensitive word embeddings. WiC is framed as a binary classification task. Each instance in WiC has a target word w, either a verb or a noun, for which two contexts are provided. Each of these contexts triggers a specific meaning of w. The task is to identify if the occurrences of w in the two contexts correspond to the same meaning or not. In fact, the dataset can also be viewed as an application of Word Sense Disambiguation in practise.*
+
+原文地址：https://paperswithcode.com/dataset/wic
+
+#### 数据格式
+
+```json
+{
+	"lemma": "afforest",
+	"pos": "V",
+	"start1_start2": "9-0",
+	"setence1": "After we leave the quarry , we intend to afforest the land and turn it into a nature reserve .",
+	"setence2": "Afforest the mountains .",
+	"label": "T"
+}
+```
+
+*说明：以上格式非源数据格式，是内部测试格式*
+
+#### 格式说明
+
+- lemma：需要消歧的词的原型
+- pos：需要消歧的词的词性Verb(V)或Noun(N)
+- sentence1：第一个句子
+- sentence2：第二个句子
+- start1_start2：第一个句子中需要消歧的词的起始位置单词索引和第二个句子中需要消歧的词的起始位置单词索引
+- label：词在两个句子中的意思是否相同，取值为True(T)或False(F)
+
+#### 下载地址
+
+https://pilehvar.github.io/wic/package/WiC_dataset.zip
+
+#### 数据集大小
+
+| 数据集 | 大小 | 备注 |
+| :----- | :--- | :--- |
+| dev    | 638  | -    |
+| test   | 1400 | -    |
+| train  | 5428 | -    |
+
+## HumanEval
+
+*The HumanEval dataset released by OpenAI includes 164 programming problems with a function sig- nature, docstring, body, and several unit tests. They were handwritten to ensure not to be included in the training set of code generation models.*
+
+原文地址：https://paperswithcode.com/dataset/humaneval
+
+#### 数据格式
+
+```json
+{
+    "task_id": "test/0",
+    "prompt": "def return1():\n",
+    "canonical_solution": "    return 1",
+    "test": "def check(candidate):\n    assert candidate() == 1",
+    "entry_point": "return1"
+}
+```
+
+#### 格式说明
+
+- `task_id`: identifier for the data sample
+- `prompt`: input for the model containing function header and docstrings
+- `canonical_solution`: solution for the problem in the `prompt`
+- `test`: contains function to test generated code for correctness
+- `entry_point`: entry point for test
+
+
+
+
+
