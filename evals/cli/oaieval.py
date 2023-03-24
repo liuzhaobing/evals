@@ -1,3 +1,6 @@
+import os
+os.environ['OPENAI_API_KEY'] = "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"
+
 """
 This file defines the `oaieval` CLI for running evals.
 """
