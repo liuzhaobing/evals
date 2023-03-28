@@ -18,6 +18,7 @@ from evals.record import record_match, record_sampling
 from evals.utils.api_utils import (
     openai_chat_completion_create_retrying,
     openai_completion_create_retrying,
+    cloudminds_chat_completion_create_retrying
 )
 
 logger = logging.getLogger(__name__)
@@ -75,6 +76,13 @@ def completion_query(
             messages=openai_create_prompt,
             **{**kwargs, **model_spec.extra_options},
         )
+    elif model_spec.is_third:
+        result = cloudminds_chat_completion_create_retrying(
+            model=model_spec.model,
+            api_key=model_spec.api_key,
+            prompt=openai_create_prompt,
+            **{**kwargs, **model_spec.extra_options},
+        )
     else:
         result = openai_completion_create_retrying(
             model=model_spec.model,
@@ -88,7 +96,7 @@ def completion_query(
         metadata["completion_id"] = result.get("id", None)
         metadata["model"] = result.get("model", None)
 
-        if model_spec.is_chat:
+        if model_spec.is_chat or model_spec.is_third:
             for choice in result["choices"]:
                 choice["text"] = choice["message"]["content"]
 

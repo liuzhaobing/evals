@@ -158,6 +158,29 @@ class Math23k(Generate):
             }
         ]
 
+
+class MultiArith(Generate):
+    def extract_and_save_datasets(self):
+        resolve = {"test": "MultiArith.json"}
+        for label, filename in resolve.items():
+            with open(os.path.join(self.this_download_path, filename), encoding="utf-8") as f:
+                datas = json.load(f)
+                datas = datas[:5]
+                with jsonlines.open(os.path.join(self.this_dataset_path, label + ".jsonl"), "w") as wf:
+                    for item in datas:
+                        wf.write(item)
+
+    def format_one_json(self, item):
+        return dict(input=self.format_chat_prompt(item), ideal=item["lSolutions"])
+
+    def format_chat_prompt(self, item):
+        return [
+            {
+                "role": "system",
+                "content": "answer the following questions, you only need to give the answer, no need to give a step of information,question is:"+item["sQuestion"],
+            }
+        ]
+
 class PKUMOD_CCKS(Generate):
     def extract_and_save_datasets(self):
         resolve = {"test": ("验证集问题.txt", "验证集答案.txt")}
@@ -198,4 +221,5 @@ if __name__ == '__main__':
     # dureader_checklist(config=["test"])
     # webQA(config=["test"])
     # Math23k(config=["test"])
-    PKUMOD_CCKS(config=["test"])
+    # PKUMOD_CCKS(config=["test"])
+    MultiArith(config=["test"])

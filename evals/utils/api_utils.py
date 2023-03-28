@@ -94,3 +94,28 @@ def openai_chat_completion_create_retrying(*args, **kwargs):
         logging.warning(result)
         raise openai.error.APIError(result["error"])
     return result
+
+
+def cloudminds_chat_completion_create_retrying(*args, **kwargs):
+    """
+    Helper function for creating a chat completion for cloudminds model.
+    """
+    import requests
+    import uuid
+
+    url = "http://172.16.33.2:8080/bloom"
+    resp = requests.post(url, json={
+        "input":"你好",
+    })
+    return {
+        "id": str(uuid.uuid4()),
+        "model": "bloom-7b",
+        "choices":[
+            {
+                "message":{
+                    "role":"assistant",
+                    "content":",".join(resp.text.split("\n")[1:])
+                }
+            }
+        ]
+    }

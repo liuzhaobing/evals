@@ -99,6 +99,10 @@ class ModelResolver:
         "dummy-chat",
     }
 
+    THIRD_MODELS = {
+        "bloom-7b"
+    }
+
     DUMMY_MODELS = {
         "dummy-chat",
         "dummy-completion",
@@ -109,16 +113,21 @@ class ModelResolver:
             result = ModelSpec(name=name, model=name, is_chat=(name in self.CHAT_MODELS))
             return result
 
-        if name in self.api_model_ids:
+        if name in self.all_models:
             result = ModelSpec(
                 name=name,
                 model=name,
+                is_third=(name in self.THIRD_MODELS),
                 is_chat=(name in self.CHAT_MODELS),
                 n_ctx=n_ctx_from_model_name(name),
             )
             return result
 
         raise ValueError(f"Couldn't find model: {name}")
+
+    @cached_property
+    def all_models(self):
+        return self.api_model_ids + list(self.THIRD_MODELS)
 
     @cached_property
     def api_model_ids(self):

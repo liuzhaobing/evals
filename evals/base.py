@@ -24,6 +24,8 @@ class ModelSpec:
 
     is_chat: bool = False
 
+    is_third: bool = False
+
     encoding: Optional[str] = None
     organization: Optional[str] = None
     api_key: Optional[str] = None
