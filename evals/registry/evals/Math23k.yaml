@@ -13,5 +13,5 @@ Math23k.fact1.v0:
   class: evals.elsuite.modelgraded.classify:ModelBasedClassify
   args:
     samples_jsonl: Math23k/Math23k.jsonl
-    eval_type: cot_classify
+    eval_type: classify_cot
     modelgraded_spec: fact_zh
