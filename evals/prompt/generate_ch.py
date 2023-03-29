@@ -220,6 +220,6 @@ if __name__ == '__main__':
     # Ape210K(config=["test"])
     # dureader_checklist(config=["test"])
     # webQA(config=["test"])
-    # Math23k(config=["test"])
+    Math23k(config=["test"])
     # PKUMOD_CCKS(config=["test"])
-    MultiArith(config=["test"])
+    # MultiArith(config=["test"])

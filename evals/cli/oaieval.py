@@ -1,5 +1,6 @@
 import os
 os.environ['OPENAI_API_KEY'] = "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"
+os.environ['EVALS_THREADS'] = "1"
 
 """
 This file defines the `oaieval` CLI for running evals.
@@ -100,7 +101,7 @@ class ModelResolver:
     }
 
     THIRD_MODELS = {
-        "bloom-7b"
+        "bloom"
     }
 
     DUMMY_MODELS = {

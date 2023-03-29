@@ -1,0 +1,17 @@
+PKUMOD_CCKS_match:
+  id: PKUMOD_CCKS.match1.v0
+  metrics: [accuracy]
+PKUMOD_CCKS.match1.v0:
+  class: evals.elsuite.basic.match:Match
+  args:
+    samples_jsonl: PKUMOD_CCKS/PKUMOD_CCKS.jsonl
+
+PKUMOD_CCKS_fact:
+  id: PKUMOD_CCKS.fact1.v0
+  metrics: [accuracy]
+PKUMOD_CCKS.fact1.v0:
+  class: evals.elsuite.modelgraded.classify:ModelBasedClassify
+  args:
+    samples_jsonl: PKUMOD_CCKS/PKUMOD_CCKS.jsonl
+    eval_type: cot_classify
+    modelgraded_spec_file: fact

@@ -1,0 +1,17 @@
+webQA_match:
+  id: webQA.match1.v0
+  metrics: [accuracy]
+webQA.match1.v0:
+  class: evals.elsuite.basic.match:Match
+  args:
+    samples_jsonl: webQA/webQA.jsonl
+
+webQA_fact:
+  id: webQA.fact1.v0
+  metrics: [accuracy]
+webQA.fact1.v0:
+  class: evals.elsuite.modelgraded.classify:ModelBasedClassify
+  args:
+    samples_jsonl: webQA/webQA.jsonl
+    eval_type: cot_classify
+    modelgraded_spec_file: fact

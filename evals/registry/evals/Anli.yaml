@@ -1,0 +1,17 @@
+Anli_match:
+  id: Anli.match1.v0
+  metrics: [accuracy]
+Anli.match1.v0:
+  class: evals.elsuite.basic.match:Match
+  args:
+    samples_jsonl: Anli/Anli.jsonl
+
+Anli_fact:
+  id: Anli.fact1.v0
+  metrics: [accuracy]
+Anli.fact1.v0:
+  class: evals.elsuite.modelgraded.classify:ModelBasedClassify
+  args:
+    samples_jsonl: Anli/Anli.jsonl
+    eval_type: cot_classify
+    modelgraded_spec_file: fact

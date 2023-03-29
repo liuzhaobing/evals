@@ -1,0 +1,17 @@
+dureader_checklist_match:
+  id: dureader_checklist.match1.v0
+  metrics: [accuracy]
+dureader_checklist.match1.v0:
+  class: evals.elsuite.basic.match:Match
+  args:
+    samples_jsonl: dureader_checklist/dureader_checklist.jsonl
+
+dureader_checklist_fact:
+  id: dureader_checklist.fact1.v0
+  metrics: [accuracy]
+dureader_checklist.fact1.v0:
+  class: evals.elsuite.modelgraded.classify:ModelBasedClassify
+  args:
+    samples_jsonl: dureader_checklist/dureader_checklist.jsonl
+    eval_type: cot_classify
+    modelgraded_spec_file: fact

@@ -1,0 +1,17 @@
+Math23k_match:
+  id: Math23k.match1.v0
+  metrics: [accuracy]
+Math23k.match1.v0:
+  class: evals.elsuite.basic.match:Match
+  args:
+    samples_jsonl: Math23k/Math23k.jsonl
+
+Math23k_fact:
+  id: Math23k.fact1.v0
+  metrics: [accuracy]
+Math23k.fact1.v0:
+  class: evals.elsuite.modelgraded.classify:ModelBasedClassify
+  args:
+    samples_jsonl: Math23k/Math23k.jsonl
+    eval_type: cot_classify
+    modelgraded_spec: fact_zh

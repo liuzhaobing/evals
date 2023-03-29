@@ -103,18 +103,18 @@ def cloudminds_chat_completion_create_retrying(*args, **kwargs):
     import requests
     import uuid
 
-    url = "http://172.16.33.2:8080/bloom"
+    url = f'http://172.16.33.2:8080/{kwargs["model"]}'
     resp = requests.post(url, json={
-        "input":"你好",
+        "input":kwargs["prompt"],
     })
     return {
         "id": str(uuid.uuid4()),
-        "model": "bloom-7b",
+        "model": "bloom",
         "choices":[
             {
                 "message":{
                     "role":"assistant",
-                    "content":",".join(resp.text.split("\n")[1:])
+                    "content":resp.json()
                 }
             }
         ]
