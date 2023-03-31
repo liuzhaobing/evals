@@ -9,10 +9,10 @@ import jsonlines
 import pandas as pd
 
 import evals
-from evals.prompt.generate_base import Generate
+from evals.prompt.generate_base import GenerateZh
 
 
-class tnews(Generate):
+class tnews(GenerateZh):
     """
     今日头条中文新闻（短文本）分类
  该数据集来自今日头条的新闻版块，共提取了15个类别的新闻，包括旅游，教育，金融，军事等
@@ -59,7 +59,7 @@ class tnews(Generate):
                  "content": f"任务：阅读新闻片段并判断新闻类别，请简要给出两个字的答案，例如：财经。新闻片段：{item['sentence']}"}]
 
 
-class iflytek(Generate):
+class iflytek(GenerateZh):
     """
     该数据集共有1.7万多条关于app应用描述的长文本标注数据，包含和日常生活相关的各类应用主题，共119个类别：""打车"":0,""地图导航"":1,""免费WIFI"":2,""租车"":3,….,""女性"":115,""经营"":116,""收款"":117,""其他"":118(分别用0-118表示
  数据量：训练集(12,133)，验证集(2,599)，测试集(2,600)
@@ -101,7 +101,7 @@ class iflytek(Generate):
                 {"role": "user", "content": f"应用程序描述：{item['sentence']}。"}]
 
 
-class waimai_10k(Generate):
+class waimai_10k(GenerateZh):
     """
     某外卖平台收集的用户评价，正向4000 条，负向约 8000 条
     """
@@ -125,7 +125,7 @@ class waimai_10k(Generate):
                 {"role": "user", "content": f"评语：{item['review']}"}]
 
 
-class ChnSentiCorp_htl_all(Generate):
+class ChnSentiCorp_htl_all(GenerateZh):
     """
     7000 多条酒店评论数据，5000 多条正向评论，2000 多条负向评论
     """
@@ -149,7 +149,7 @@ class ChnSentiCorp_htl_all(Generate):
                 {"role": "user", "content": f"评语：{item['review']}"}]
 
 
-class afqmc(Generate):
+class afqmc(GenerateZh):
     """
     蚂蚁金融语义相似度
     训练集（34334）验证集（4316）测试集（3861）
@@ -179,7 +179,7 @@ class afqmc(Generate):
                 {"role": "user", "content": f"句子2：{item['sentence2']}。"}]
 
 
-class lcqmc(Generate):
+class lcqmc(GenerateZh):
     """
     通用领域匹配数据集，该数据集从百度知道不同领域的用户问题中抽取构建数据。
     训练集：238766 开发集：8802  测试集：12500
@@ -212,7 +212,7 @@ class lcqmc(Generate):
                 {"role": "user", "content": f"句子2：{item['sentence2']}。"}]
 
 
-class cmrc(Generate):
+class cmrc(GenerateZh):
     """
     数据量：训练集(短文数2,403，问题数10,142)，试验集(短文数256，问题数1,002)，开发集(短文数848，问题数3,219)
     """
@@ -248,7 +248,7 @@ class cmrc(Generate):
         return template, answers
 
 
-class csl(Generate):
+class csl(GenerateZh):
     """
     中文科技文献数据集(CSL)取自中文论文摘要及其关键词，论文选自部分中文社会科学和自然科学核心期刊
     数据量：训练集(20,000)，验证集(3,000)，测试集(3,000)
@@ -278,7 +278,7 @@ class csl(Generate):
                 {"role": "user", "content": f"关键词：{'、'.join(item['keyword'])}。"}]
 
 
-class cluener2020(Generate):
+class cluener2020(GenerateZh):
     """
     数据分为10个标签类别，分别为: 地址（address），书名（book），公司（company），游戏（game），政府（government），电影（movie），姓名（name），组织机构（organization），职位（position），景点（scene）,
     训练集：10748, 验证集集：1343
@@ -325,7 +325,7 @@ class cluener2020(Generate):
                 {"role": "user", "content": f"文本内容：{item['text']}。"}]
 
 
-class cluewsc2020(Generate):
+class cluewsc2020(GenerateZh):
     """
     判断句子中的代词指代的是哪个名词
     训练集（1244）验证集（304）
@@ -354,7 +354,7 @@ class cluewsc2020(Generate):
                  "content": f"陈述：“{item['target']['span2_text']}”在句中指代“{item['target']['span1_text']}”。"}]
 
 
-class bltc(Generate):
+class bltc(GenerateZh):
     """低资源语言翻译,中俄平行数据，泰语单语数据"""
     d_url = "https://dataset-bj.cdn.bcebos.com/qianyan/bltc.tar.gz"
 
@@ -374,7 +374,7 @@ class bltc(Generate):
         return []
 
 
-class MDCSC(Generate):
+class MDCSC(GenerateZh):
     """
     人工标注了8000多条中文多领域拼写错误及正确的句子对
     """
@@ -408,7 +408,7 @@ class MDCSC(Generate):
                 {"role": "user", "content": f"句子：{item['sentence1']}"}]
 
 
-class RiSAWOZ(Generate):
+class RiSAWOZ(GenerateZh):
     """
     具有丰富语义信息标注的大规模中文多领域任务型对话数据集，它包含1.12万个已标注的人-人多轮对话，总对话轮数超过15万轮，覆盖12个领域
     """
@@ -437,7 +437,57 @@ class RiSAWOZ(Generate):
         return []
 
 
+class xfinal(GenerateZh):
+    """机器翻译 """
+    d_url = "https://storage.googleapis.com/paws/pawsx/x-final.tar.gz"
+    lang = {
+        "de": "德语",
+        "en": "英语",
+        "es": "西班牙语",
+        "fr": "法语",
+        "ja": "日语",
+        "ko": "韩语",
+        "zh": "中文"
+    }
+
+    def extract_and_save_datasets(self):
+        os.makedirs(self.this_download_path, exist_ok=True)
+        this_download_filename = os.path.join(self.this_download_path, self.class_name + ".tar.gz")
+        urllib.request.urlretrieve(self.d_url, this_download_filename)
+        with tarfile.open(this_download_filename, "r:gz") as tar:
+            tar.extractall(self.this_download_path)
+        os.remove(this_download_filename)
+
+        resolve = {"test": "test_2k.tsv", "validation": "dev_2k.tsv", "train": "translated_train.tsv"}
+        for label, filename in resolve.items():
+            with jsonlines.open(os.path.join(self.this_dataset_path, f"{label}.jsonl"), "w") as f:
+                tmp_list = []
+                for lang_en, lang_zh in self.lang.items():
+                    now_file = os.path.join(self.this_download_path, "x-final", lang_en, filename)
+                    df = pd.read_csv(now_file, sep="\t", header=0, encoding="UTF-8")
+                    head_list = list(df.columns)
+                    values = df.values
+
+                    if len(tmp_list) > 0:
+                        for index in range(len(values)):
+                            value = dict(zip(head_list, values[index]))
+                            tmp_list[index]["sentence1_" + lang_en] = value["sentence1"]
+                            tmp_list[index]["sentence2_" + lang_en] = value["sentence2"]
+
+                    else:
+                        for line in values:
+                            value = dict(zip(head_list, line))
+                            tmp_list.append({"id": value["id"],
+                                             "sentence1_" + lang_en: value["sentence1"],
+                                             "sentence2_" + lang_en: value["sentence2"],
+                                             "label": value["label"]})
+                # TODO
+                f.write_all(tmp_list)
+
+
 if __name__ == '__main__':
+    # xfinal(config=["test"])
+
     # RiSAWOZ(config=["test"])
 
     MDCSC(config=["test"])  # test/train

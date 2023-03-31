@@ -97,3 +97,27 @@ class Generate:
     eval_type: cot_classify
     modelgraded_spec: fact
 """.strip()
+
+
+class GenerateZh(Generate):
+    def format_one_yaml(self):
+        """生成test case模板"""
+        return f"""
+{self.class_name}_match:
+  id: {self.class_name}.match1.v0
+  metrics: [accuracy]
+{self.class_name}.match1.v0:
+  class: evals.elsuite.basic.match:Match
+  args:
+    samples_jsonl: {self.class_name}/{self.class_name + ".jsonl"}
+
+{self.class_name}_fact:
+  id: {self.class_name}.fact1.v0
+  metrics: [accuracy]
+{self.class_name}.fact1.v0:
+  class: evals.elsuite.modelgraded.classify:ModelBasedClassify
+  args:
+    samples_jsonl: {self.class_name}/{self.class_name + ".jsonl"}
+    eval_type: cot_classify
+    modelgraded_spec: fact_zh
+""".strip()
