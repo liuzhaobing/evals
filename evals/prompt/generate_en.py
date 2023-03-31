@@ -248,7 +248,7 @@ class COQA(Generate):
   args:
     samples_jsonl: {self.class_name}/{self.class_name + ".jsonl"}
     eval_type: cot_classify
-    modelgraded_spec_file: fact
+    modelgraded_spec: fact
 """.strip()
 
 

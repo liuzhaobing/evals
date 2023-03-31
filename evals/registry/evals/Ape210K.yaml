@@ -14,4 +14,4 @@ Ape210K.fact1.v0:
   args:
     samples_jsonl: Ape210K/Ape210K.jsonl
     eval_type: classify
-    modelgraded_spec_file: fact
+    modelgraded_spec: fact
