@@ -118,6 +118,6 @@ class GenerateZh(Generate):
   class: evals.elsuite.modelgraded.classify:ModelBasedClassify
   args:
     samples_jsonl: {self.class_name}/{self.class_name + ".jsonl"}
-    eval_type: cot_classify
+    eval_type: cot_classify_zh
     modelgraded_spec: fact_zh
 """.strip()
