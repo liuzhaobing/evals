@@ -1,5 +1,5 @@
 import os
-os.environ['OPENAI_API_KEY'] = "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"
+os.environ['OPENAI_API_KEY'] = "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"
 os.environ['EVALS_THREADS'] = "1"
 
 """
@@ -101,7 +101,8 @@ class ModelResolver:
     }
 
     THIRD_MODELS = {
-        "bloom"
+        "bloom",
+        "chatglm"
     }
 
     DUMMY_MODELS = {

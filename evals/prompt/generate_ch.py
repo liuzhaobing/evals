@@ -181,6 +181,41 @@ class MultiArith(Generate):
             }
         ]
 
+#基本常识
+class JBCS(Generate):
+    def extract_and_save_datasets(self):
+        questions = [{
+            "question": "中国的首都是哪里？",
+            "answer": "北京"
+        },{
+            "question": "在太阳系9大行星中，最大的行星是哪一颗？",
+            "answer": "木星"
+        },{
+            "question": "为中国赢得第一块澳运会金牌的项目是？",
+            "answer": "射击"
+        },{
+            "question": "世界最高峰是什么峰？",
+            "answer": "珠穆朗玛峰"
+        },{
+            "question": "世界上面积最大的国家是哪个国家？",
+            "answer": "俄罗斯"
+        }
+        ]
+        with jsonlines.open(os.path.join(self.this_dataset_path, "test.jsonl"), "w") as wf:
+            for item in questions:
+                wf.write(item)
+
+    def format_one_json(self, item):
+        return dict(input=self.format_chat_prompt(item), ideal=item["answer"])
+
+    def format_chat_prompt(self, item):
+        return [
+            {
+                "role": "system",
+                "content": item["question"],
+            }
+        ]
+
 class PKUMOD_CCKS(Generate):
     def extract_and_save_datasets(self):
         resolve = {"test": ("验证集问题.txt", "验证集答案.txt")}
@@ -220,6 +255,7 @@ if __name__ == '__main__':
     # Ape210K(config=["test"])
     # dureader_checklist(config=["test"])
     # webQA(config=["test"])
-    Math23k(config=["test"])
+    # Math23k(config=["test"])
     # PKUMOD_CCKS(config=["test"])
     # MultiArith(config=["test"])
+    JBCS(config=["test"])

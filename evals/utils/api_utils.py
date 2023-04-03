@@ -103,18 +103,50 @@ def cloudminds_chat_completion_create_retrying(*args, **kwargs):
     import requests
     import uuid
 
-    url = f'http://172.16.33.2:8080/{kwargs["model"]}'
+    if kwargs["model"] == "chatglm":
+        return chatglm_api(kwargs["prompt"])
+    if kwargs["model"] == "bloom":
+        return bloom_api(kwargs["prompt"])
+
+def bloom_api(query):
+    import requests
+    import uuid
+
+    url = f'http://172.16.33.2:8080/bloom'
     resp = requests.post(url, json={
-        "input":kwargs["prompt"],
+        "input": query,
     })
     return {
         "id": str(uuid.uuid4()),
         "model": "bloom",
+        "choices": [
+            {
+                "message": {
+                    "role": "assistant",
+                    "content": resp.json()
+                }
+            }
+        ]
+    }
+
+def chatglm_api(query):
+    import requests
+    import uuid
+
+    url = f'http://172.16.23.85:30592/chatglm/ask'
+    resp = requests.post(url, json={
+      "input": query,
+      "history": [],
+      "conv_user_id": str(uuid.uuid4()),
+    })
+    return {
+        "id": str(uuid.uuid4()),
+        "model": "chatglm",
         "choices":[
             {
                 "message":{
                     "role":"assistant",
-                    "content":resp.json()
+                    "content":resp.json()["body"]["message"]
                 }
             }
         ]
