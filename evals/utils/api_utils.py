@@ -89,11 +89,41 @@ def openai_chat_completion_create_retrying(*args, **kwargs):
     if kwargs["model"] == "dummy-chat":
         return generate_dummy_chat_completion()
 
-    result = openai.ChatCompletion.create(*args, **kwargs)
-    if "error" in result:
-        logging.warning(result)
-        raise openai.error.APIError(result["error"])
-    return result
+    return openai_chat(*args, **kwargs)
+
+    # result = openai.ChatCompletion.create(*args, **kwargs)
+    # if "error" in result:
+    #     logging.warning(result)
+    #     raise openai.error.APIError(result["error"])
+    # return result
+
+
+def openai_chat(*args, **kwargs):
+    import requests
+    # import json
+    import uuid
+
+    url = "http://172.16.32.2:31806/chatgpt/api/ask"
+    resp = requests.post(url, json={
+        "input": kwargs["messages"],
+        "conv_user_id": "cffbda0f-ea62-4549-b766-ac7356e0b5ca2"
+    })
+    d = resp.json()
+    rtn = ""
+    if d["code"] == 0:
+        rtn = d["body"]["message"]
+    return {
+        "id": str(uuid.uuid4()),
+        "model": "chatgpt",
+        "choices": [
+            {
+                "message": {
+                    "role": "assistant",
+                    "content": rtn
+                }
+            }
+        ]
+    }
 
 
 def cloudminds_chat_completion_create_retrying(*args, **kwargs):
@@ -128,6 +158,7 @@ def bloom_api(query):
             }
         ]
     }
+
 
 def chatglm_api(query):
     import requests
