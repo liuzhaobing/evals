@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import os
+import random
 
 import jsonlines
 import evals
@@ -54,7 +55,12 @@ class Generate:
         if not os.path.exists(dataset_file_path):
             self.extract_and_save_datasets()
         if os.path.exists(dataset_file_path):
-            return evals.get_jsonls(dataset_file_path)
+            all_data = evals.get_jsonls(dataset_file_path)
+            if len(self.config) > 1:
+                if type(self.config[1]) == int:
+                    """限定此测试集的样本数"""
+                    return random.sample(all_data, self.config[1])
+            return all_data
         raise ValueError(f"no such subset named {self.config}]")
 
     def format_chat_prompt(self, item):
