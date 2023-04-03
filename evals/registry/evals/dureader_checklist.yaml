@@ -14,4 +14,4 @@ dureader_checklist.fact1.v0:
   args:
     samples_jsonl: dureader_checklist/dureader_checklist.jsonl
     eval_type: cot_classify
-    modelgraded_spec_file: fact
+    modelgraded_spec: fact

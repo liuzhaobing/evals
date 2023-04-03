@@ -2,10 +2,10 @@ import jsonlines
 import os
 import json
 import re
-from evals.prompt.generate_base import Generate
+from evals.prompt.generate_base import GenerateZh
 
 
-class Anli(Generate):
+class Anli(GenerateZh):
     def extract_and_save_datasets(self):
         resolve = {"test": ["R3", "dev.jsonl"]}
         for label, filename in resolve.items():
@@ -32,7 +32,7 @@ class Anli(Generate):
         ]
 
 
-class dureader_checklist(Generate):
+class dureader_checklist(GenerateZh):
     def extract_and_save_datasets(self):
         resolve = {"test": "dev.json"}
         for label, filename in resolve.items():
@@ -82,7 +82,7 @@ class dureader_checklist(Generate):
         ]
 
 
-class Ape210K(Generate):
+class Ape210K(GenerateZh):
     def extract_and_save_datasets(self):
         resolve = {"test": "test.ape.json"}
         for label, filename in resolve.items():
@@ -105,7 +105,7 @@ class Ape210K(Generate):
         ]
 
 
-class webQA(Generate):
+class webQA(GenerateZh):
     def extract_and_save_datasets(self):
         resolve = {"test": "me_test.ann.json"}
         for label, filename in resolve.items():
@@ -122,7 +122,7 @@ class webQA(Generate):
 
     def format_one_json(self, item):
         answer = ""
-        for key,value in item["evidences"].items():
+        for key, value in item["evidences"].items():
             if "answer" in value:
                 answer += value["answer"][0]
         return dict(input=self.format_chat_prompt(item), ideal=answer)
@@ -136,7 +136,7 @@ class webQA(Generate):
         ]
 
 
-class Math23k(Generate):
+class Math23k(GenerateZh):
     def extract_and_save_datasets(self):
         resolve = {"test": "math23k_test.json"}
         for label, filename in resolve.items():
@@ -159,7 +159,7 @@ class Math23k(Generate):
         ]
 
 
-class MultiArith(Generate):
+class MultiArith(GenerateZh):
     def extract_and_save_datasets(self):
         resolve = {"test": "MultiArith.json"}
         for label, filename in resolve.items():
@@ -177,12 +177,13 @@ class MultiArith(Generate):
         return [
             {
                 "role": "system",
-                "content": "answer the following questions, you only need to give the answer, no need to give a step of information,question is:"+item["sQuestion"],
+                "content": "answer the following questions, you only need to give the answer, no need to give a step of information,question is:" +
+                           item["sQuestion"],
             }
         ]
 
 #基本常识
-class JBCS(Generate):
+class JBCS(GenerateZh):
     def extract_and_save_datasets(self):
         questions = [{
             "question": "中国的首都是哪里？",
@@ -216,7 +217,7 @@ class JBCS(Generate):
             }
         ]
 
-class PKUMOD_CCKS(Generate):
+class PKUMOD_CCKS(GenerateZh):
     def extract_and_save_datasets(self):
         resolve = {"test": ("验证集问题.txt", "验证集答案.txt")}
         for label, filename in resolve.items():
