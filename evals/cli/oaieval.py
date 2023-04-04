@@ -2,6 +2,8 @@ import os
 os.environ['OPENAI_API_KEY'] = "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"
 os.environ['EVALS_THREADS'] = "1"
 
+from evals.utils.settings import set_llm_settings
+
 """
 This file defines the `oaieval` CLI for running evals.
 """

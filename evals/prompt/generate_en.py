@@ -507,4 +507,4 @@ if __name__ == '__main__':
 
     StoryCloze(config=["validation"])  # test(无答案)/validation
 
-    WinoGrande(config=["validation"])  # test(无答案)/train/validation
+    WinoGrande(config=["validation", 10])  # test(无答案)/train/validation

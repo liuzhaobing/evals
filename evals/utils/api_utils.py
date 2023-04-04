@@ -89,13 +89,13 @@ def openai_chat_completion_create_retrying(*args, **kwargs):
     if kwargs["model"] == "dummy-chat":
         return generate_dummy_chat_completion()
 
-    return openai_chat(*args, **kwargs)
+    # return openai_chat(*args, **kwargs)
 
-    # result = openai.ChatCompletion.create(*args, **kwargs)
-    # if "error" in result:
-    #     logging.warning(result)
-    #     raise openai.error.APIError(result["error"])
-    # return result
+    result = openai.ChatCompletion.create(*args, **kwargs)
+    if "error" in result:
+        logging.warning(result)
+        raise openai.error.APIError(result["error"])
+    return result
 
 
 def openai_chat(*args, **kwargs):
@@ -137,6 +137,7 @@ def cloudminds_chat_completion_create_retrying(*args, **kwargs):
         return chatglm_api(kwargs["prompt"])
     if kwargs["model"] == "bloom":
         return bloom_api(kwargs["prompt"])
+
 
 def bloom_api(query):
     import requests

@@ -13,5 +13,6 @@ Anli.fact1.v0:
   class: evals.elsuite.modelgraded.classify:ModelBasedClassify
   args:
     samples_jsonl: Anli/Anli.jsonl
-    eval_type: cot_classify
+    eval_type: classify_cot
     modelgraded_spec: fact
+    eval_model: chatglm

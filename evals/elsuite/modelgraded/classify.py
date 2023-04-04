@@ -284,6 +284,7 @@ class ModelBasedClassify(evals.Eval):
                 self.invalid_request_during_completion += 1
                 return
 
+        #评估
         try:
             metrics = {}
             evaluate = PromptFn(
