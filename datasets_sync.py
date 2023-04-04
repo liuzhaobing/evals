@@ -127,16 +127,17 @@ class S3:
             # Delimiter='/',
             # Prefix=file_name,
         )
+        file_list = []
         while 'NextContinuationToken' in response:
             if response['Contents']:
-                self.save(response['Contents'])
+                file_list += response['Contents']
             if response['NextContinuationToken']:
                 response = self.client.list_objects_v2(Bucket=bucket_name,
                                                        ContinuationToken=response['NextContinuationToken'])
             else:
                 response = self.client.list_objects_v2(Bucket=bucket_name)
 
-        return response["Contents"] if response.__contains__("Contents") else []
+        return file_list
 
 
 s3 = S3('ARCHIVED')
@@ -170,17 +171,30 @@ def pull_s3_dir_to_local(target_bucket, sync_pth, overwrite=False):
     project_path = os.path.abspath(".")
     sync_dir = project_path
     if "\\" in sync_pth:
-        for item in sync_pth.strip().split("\\"):
+        sync_pth_list = sync_pth.strip().split("\\")
+        for item in sync_pth_list:
             sync_dir = os.path.join(sync_dir, item)
+
     elif "/" in sync_pth:
-        for item in sync_pth.strip().split("/"):
+        sync_pth_list = sync_pth.strip().split("/")
+        for item in sync_pth_list:
             sync_dir = os.path.join(sync_dir, item)
+    else:
+        sync_dir = os.path.join(sync_dir, sync_pth)
+        sync_pth_list = [sync_pth]
     downloaded_list = []
     for dir_path, dir_names, filenames in os.walk(sync_dir):
         for filepath in filenames:
             file_full_path = os.path.join(dir_path, filepath)
             downloaded_list.append(file_full_path)
     for item in s3.get_list_s3(target_bucket):
+        item_list = item["Key"].split("/")
+        jump = False
+        for i in range(len(sync_pth_list)):
+            if sync_pth_list[i] != item_list[i + 1]:
+                jump = True
+        if jump:
+            continue
         local_file_name = item["Key"].replace("/", "\\") if "\\" in project_path else item["Key"]
         local_file_name = project_path + local_file_name
         if local_file_name in downloaded_list and not overwrite:
