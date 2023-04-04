@@ -5,7 +5,7 @@ openai.api_key = "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"
 
 class ChatGpt(object):
     #‘∆Õ≈∂”
-    url = "http://172.16.13.135:30846/chatgpt/api/ask"
+    url = "http://172.16.32.2:31806/chatgpt/api/ask"
     def __init__(self):
         self.index = 0
 
