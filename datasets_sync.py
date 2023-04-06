@@ -215,6 +215,6 @@ if __name__ == '__main__':
     parser.add_argument("fn", type=str, help="拉取数据:pull  推送数据:push")
     parser.add_argument("target_bucket", type=str, help="S3对象存储bucket：如：evals-bucket", default="evals-bucket")
     parser.add_argument("sync_pth", type=str, help="推送/拉取数据路径如：datasets或evals/registry/data", default="datasets")
-    parser.add_argument("overwrite", type=bool, help="数据已存在时是否重写 重写True 不重写False", default=False)
+    parser.add_argument("overwrite", type=str, help="数据已存在时是否重写 重写overwrite 不重写no_overwrite", default="no_overwrite")
     args = parser.parse_args(sys.argv[1:])
-    main(args.fn, args.target_bucket, args.sync_pth, args.overwrite)
+    main(args.fn, args.target_bucket, args.sync_pth, True if args.overwrite == "overwrite" else False)

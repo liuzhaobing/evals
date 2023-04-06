@@ -11,4 +11,10 @@ PyYAML~=6.0
 jsonlines~=3.1.0
 pandas~=1.5.3
 datasets~=2.10.1
+jsonlines~=3.1.0
+pandas~=1.5.3
+datasets~=2.10.1
 requests
+boto3~=1.26.104
+urllib3~=1.26.15
+loguru~=0.6.0
