@@ -2,7 +2,7 @@ import os
 os.environ['OPENAI_API_KEY'] = "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"
 os.environ['EVALS_THREADS'] = "1"
 
-from evals.utils.settings import set_llm_settings
+from evals.utils import cloudminds
 
 """
 This file defines the `oaieval` CLI for running evals.
@@ -123,10 +123,7 @@ class ModelResolver:
         "dummy-chat",
     }
 
-    THIRD_MODELS = {
-        "bloom",
-        "chatglm"
-    }
+    THIRD_MODELS = cloudminds.ChatCompletion.models
 
     DUMMY_MODELS = {
         "dummy-chat",
