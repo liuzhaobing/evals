@@ -3,6 +3,11 @@ import requests
 import sentence_transformers
 import torch
 import uuid
+import grpc
+import json
+from evals.utils.api.talk import talk_pb2
+from evals.utils.api.talk import talk_pb2_grpc
+from google.protobuf import json_format
 
 if torch.cuda.is_available():
     device = torch.device("cuda:0")
@@ -104,11 +109,52 @@ class HuggingFaceSBertPq(CloudMindsModel):
         return "是" if s.item() > line else "否"
 
 
+def mock_trace_id():
+    return str(uuid.uuid4()) + "@cloudminds-test.com.cn"
+
+
+class SmartVoice(CloudMindsModel):
+    MODEL_NAME = "flag_open"
+    address = "172.16.23.85:30811"  # fit 86
+    agent_id = 65
+    is_conversation = False
+    session_id = mock_trace_id()
+
+    channel = grpc.insecure_channel(address)
+    stub = talk_pb2_grpc.TalkStub(channel)
+
+    @classmethod
+    def create(cls, *args, **kwargs):
+        def talk_req(payload):
+            yield payload
+
+        message = talk_pb2.TalkRequest(is_full=True,
+                                       agent_id=cls.agent_id,
+                                       session_id=cls.session_id if cls.is_conversation else mock_trace_id(),
+                                       question_id=mock_trace_id(),
+                                       event_type=0,
+                                       robot_id="5C1AEC03573747D",
+                                       tenant_code="cloudminds",
+                                       version="v3",
+                                       test_mode=False,
+                                       asr=talk_pb2.Asr(lang="CH", text=kwargs["prompt"]))
+        stream_response = cls.stub.StreamingTalk(talk_req(message).__iter__())
+        response_json = [json.loads(json_format.MessageToJson(response)) for response in stream_response]
+        tts = response_json[-1]["tts"][0]
+        try:
+            return tts["action"]["param"]["raw_data"]["wholeAnswer"]
+        except:
+            if tts.__contains__("text"):
+                return tts["text"]
+            return ""
+
+
 if __name__ == '__main__':
     # model_name = "chatglm_api"
     # model_name = "openai_api"
     # model_name = "bloom_api"
-    model_name = "sbert_pq"
+    # model_name = "sbert_pq"
+    model_name = "flag_open"
     result = ChatCompletion.create(model=model_name,
                                    prompt="任务：判断两个句子语义是否相似，回答'否'或者'是'。\nUser: 句子1：出入境的回执单可以乘机吗。\nUser: 句子2：出入境管理局开的证明可以换登记牌吗。\nAssistant: ")
     print(result)
