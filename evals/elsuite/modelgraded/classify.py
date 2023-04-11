@@ -20,11 +20,13 @@ from evals.elsuite.modelgraded.classify_utils import (
     get_choice,
 )
 from evals.elsuite.utils import PromptFn, scrub_formatting_from_prompt
+from evals.utils import cloudminds
 
 
 class ModelBasedClassify(evals.Eval):
     invalid_request_during_completion = 0
     invalid_request_during_evaluation = 0
+    THIRD_MODELS = cloudminds.ChatCompletion.models
 
     def __init__(
         self,
@@ -69,7 +71,7 @@ class ModelBasedClassify(evals.Eval):
         if self.model_spec.name == "dummy-completion" or self.model_spec.name == "dummy-chat":
             self.eval_modelspec = self.model_spec
         else:
-            self.eval_modelspec = ModelSpec(name=eval_model, model=eval_model, is_chat=True)
+            self.eval_modelspec = ModelSpec(name=eval_model, model=eval_model, is_chat=True, is_third=(self.model_spec.name in self.THIRD_MODELS))
 
         spec_kwargs = {"multicomp_n": self.multicomp_n}
         if modelgraded_spec_args:
@@ -213,4 +215,4 @@ class ModelBasedClassify(evals.Eval):
                 metascores = [m[metric + "_metascore"] for m in all_sample_metrics if metric in m]
                 record_metrics[f"metascore/{metric}"] = sum(metascores) / len(all_sample_metrics)
 
-        return 
+        return record_metrics
