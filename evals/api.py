@@ -74,7 +74,14 @@ def completion_query(
         for key in set(kwargs) | set(model_spec.extra_options)
     }
 
-    if model_spec.is_chat:
+    if model_spec.is_third:
+        result = cloudminds_chat_completion_create_retrying(
+            model=model_spec.model,
+            api_key=model_spec.api_key,
+            prompt=openai_create_prompt,
+            **{**kwargs, **model_spec.extra_options},
+        )
+    elif model_spec.is_chat:
         result = openai_chat_completion_create_retrying(
             model=model_spec.model,
             engine=model_spec.engine,
@@ -82,13 +89,6 @@ def completion_query(
             api_key=model_spec.api_key,
             messages=openai_create_prompt,
             **extra_args,
-        )
-    elif model_spec.is_third:
-        result = cloudminds_chat_completion_create_retrying(
-            model=model_spec.model,
-            api_key=model_spec.api_key,
-            prompt=openai_create_prompt,
-            **{**kwargs, **model_spec.extra_options},
         )
     else:
         result = openai_completion_create_retrying(
