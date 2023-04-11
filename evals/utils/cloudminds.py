@@ -52,9 +52,9 @@ class BloomAPI(CloudMindsModel):
     @classmethod
     def create(cls, *args, **kwargs) -> str:
         url = f'http://172.16.33.2:8080/bloom'
-        payload = {"input": kwargs["prompt"]}
+        payload = {"input": str(kwargs["prompt"])}
         resp = requests.request(method="POST", url=url, json=payload)
-        return resp.json()
+        return resp.content.decode().strip()
 
 
 class OpenAIAPI(CloudMindsModel):
@@ -65,7 +65,7 @@ class OpenAIAPI(CloudMindsModel):
         url = "http://172.16.32.2:31806/chatgpt/api/ask"
         payload = {
             "input": [{"role": "system", "content": "You are a helpful assistant."},
-                      {"role": "user", "content": kwargs["prompt"]}],
+                      {"role": "user", "content": str(kwargs["prompt"])}],
             "conv_user_id": "cffbda0f-ea62-4549-b766-ac7356e0b5ca2"
         }
         resp = requests.post(url, json=payload)
@@ -83,7 +83,7 @@ class ChatGLMAPI(CloudMindsModel):
     def create(cls, *args, **kwargs):
         url = f'http://172.16.23.85:30592/chatglm/ask'
         resp = requests.post(url, json={
-            "input": kwargs["prompt"],
+            "input": str(kwargs["prompt"]),
             "history": [],
             "conv_user_id": str(uuid.uuid4()),
         })
@@ -96,7 +96,7 @@ class HuggingFaceSBertPq(CloudMindsModel):
 
     @classmethod
     def create(cls, *args, **kwargs):
-        query = kwargs["prompt"]
+        query = str(kwargs["prompt"])
         sentence1 = query.split("\n")[1].replace("User: 句子1：", "")
         sentence2 = query.split("\n")[2].replace("User: 句子2：", "")
         sentences = [sentence1, sentence2]
@@ -137,7 +137,7 @@ class SmartVoice(CloudMindsModel):
                                        tenant_code="cloudminds",
                                        version="v3",
                                        test_mode=False,
-                                       asr=talk_pb2.Asr(lang="CH", text=kwargs["prompt"]))
+                                       asr=talk_pb2.Asr(lang="CH", text=str(kwargs["prompt"])))
         stream_response = cls.stub.StreamingTalk(talk_req(message).__iter__())
         response_json = [json.loads(json_format.MessageToJson(response)) for response in stream_response]
         tts = response_json[-1]["tts"][0]

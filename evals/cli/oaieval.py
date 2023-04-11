@@ -1,5 +1,5 @@
 import os
-os.environ['OPENAI_API_KEY'] = "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"
+os.environ['OPENAI_API_KEY'] = "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"
 os.environ['EVALS_THREADS'] = "1"
 
 from evals.utils import cloudminds

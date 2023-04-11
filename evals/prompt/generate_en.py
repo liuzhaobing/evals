@@ -479,32 +479,34 @@ class HumanEval(Generate):
 
 
 if __name__ == '__main__':
+    sample = 100
+
     HumanEval(config=["test"])  # test
 
-    WiC(config=["test"])  # test/train/validation
+    WiC(config=["test", sample])  # test/train/validation
 
-    ReCoRD(config=["validation"])  # train/validation
+    ReCoRD(config=["validation", sample])  # train/validation
 
     QuAC(config=["validation"])  # train/validation
 
-    DROP(config=["validation"])  # train/validation
+    DROP(config=["validation", sample])  # train/validation
 
-    RACE(config=["test"])  # test/train/validation
+    RACE(config=["test", sample])  # test/train/validation
 
-    SQuAD(config=["validation"])  # train/validation
+    SQuAD(config=["validation", sample])  # train/validation
 
-    CNNDailyMail(config=["test"])  # test/train/validation
+    CNNDailyMail(config=["test", sample])  # test/train/validation
 
-    COQA(config=["validation"])  # train/validation
+    COQA(config=["validation", sample])  # train/validation
 
     MultiRC(config=["test"])  # test
 
-    WSC(config=["test"])  # test
+    WSC(config=["test", sample])  # test
 
-    BoolQ(config=["validation"])  # train/validation
+    BoolQ(config=["validation", sample])  # train/validation
 
-    COPA(config=["test"])  # test/validation
+    COPA(config=["test", sample])  # test/validation
 
-    StoryCloze(config=["validation"])  # test(无答案)/validation
+    StoryCloze(config=["validation", sample])  # test(无答案)/validation
 
-    WinoGrande(config=["validation", 10])  # test(无答案)/train/validation
+    WinoGrande(config=["validation", sample])  # test(无答案)/train/validation

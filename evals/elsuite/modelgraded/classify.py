@@ -71,7 +71,7 @@ class ModelBasedClassify(evals.Eval):
         if self.model_spec.name == "dummy-completion" or self.model_spec.name == "dummy-chat":
             self.eval_modelspec = self.model_spec
         else:
-            self.eval_modelspec = ModelSpec(name=eval_model, model=eval_model, is_chat=True, is_third=(self.model_spec.name in self.THIRD_MODELS))
+            self.eval_modelspec = ModelSpec(name=eval_model, model=eval_model, is_chat=True, is_third=(eval_model in self.THIRD_MODELS))
 
         spec_kwargs = {"multicomp_n": self.multicomp_n}
         if modelgraded_spec_args:

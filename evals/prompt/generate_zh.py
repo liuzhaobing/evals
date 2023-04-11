@@ -485,7 +485,34 @@ class xfinal(GenerateZh):
                 f.write_all(tmp_list)
 
 
+class semantic_similarity(GenerateZh):
+    """
+    本地qqsim测试数据
+    """
+
+    def extract_and_save_datasets(self):
+        resolve = {"test": "semantic_similarity.xlsx"}
+        for label, filename in resolve.items():
+            df = pd.read_excel(io=os.path.join(self.this_download_path, filename), sheet_name="Sheet1")
+            head_list = list(df.columns)
+            with jsonlines.open(os.path.join(self.this_dataset_path, label+".jsonl"), "w") as f:
+                for line in df.values:
+                    f.write(dict(zip(head_list, line)))
+
+    def format_one_json(self, item):
+        return dict(input=self.format_chat_prompt(item), ideal="是" if int(item["label"]) else "否")
+
+    def format_chat_prompt(self, item):
+        return [{"role": "system", "content": "任务：判断两个句子语义是否相似，回答“否”或者“是”。"},
+                {"role": "user", "content": f"句子1：{item['sentence1']}。"},
+                {"role": "user", "content": f"句子2：{item['sentence2']}。"}]
+
+
 if __name__ == '__main__':
+    sample = 100
+
+    semantic_similarity(config=["test"])
+
     # xfinal(config=["test"])
 
     # RiSAWOZ(config=["test"])
@@ -494,22 +521,22 @@ if __name__ == '__main__':
 
     # bltc(config=["validation"])
 
-    cluewsc2020(config=["validation"])  # test(无答案)/validation/train
+    cluewsc2020(config=["validation", sample])  # test(无答案)/validation/train
 
-    cluener2020(config=["validation"])  # test(无答案)/validation/train
+    cluener2020(config=["validation", sample])  # test(无答案)/validation/train
 
-    csl(config=["validation"])  # test(无答案)/validation/train
+    csl(config=["validation", sample])  # test(无答案)/validation/train
 
-    cmrc(config=["validation"])  # test(无答案)/validation/train/trail
+    cmrc(config=["validation", sample])  # test(无答案)/validation/train/trail
 
-    lcqmc(config=["validation"])  # test(无答案)/validation/train
+    lcqmc(config=["validation", sample])  # test(无答案)/validation/train
 
-    afqmc(config=["validation"])  # test(无答案)/validation/train
+    afqmc(config=["validation", sample])  # test(无答案)/validation/train
 
-    ChnSentiCorp_htl_all(config=["train"])  # train
+    ChnSentiCorp_htl_all(config=["train", sample])  # train
 
-    waimai_10k(config=["train"])  # train
+    waimai_10k(config=["train", sample])  # train
 
-    iflytek(config=["validation"])  # test(无答案)/validation/train
+    iflytek(config=["validation", sample])  # test(无答案)/validation/train
 
-    tnews(config=["validation"])  # test(无答案)/validation/train
+    tnews(config=["validation", sample])  # test(无答案)/validation/train
