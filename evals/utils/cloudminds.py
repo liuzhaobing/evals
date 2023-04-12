@@ -1,4 +1,6 @@
 # -*- coding:utf-8 -*-
+import time
+
 import requests
 import sentence_transformers
 import torch
@@ -125,28 +127,92 @@ class SmartVoice(CloudMindsModel):
 
     @classmethod
     def create(cls, *args, **kwargs):
+        for i in range(3):
+            msg = cls.call(*args, **kwargs)
+            if msg != "":
+                return msg
+            time.sleep(60)
+
+    @classmethod
+    def call(cls, *args, **kwargs):
         def talk_req(payload):
             yield payload
 
-        message = talk_pb2.TalkRequest(is_full=True,
-                                       agent_id=cls.agent_id,
-                                       session_id=cls.session_id if cls.is_conversation else mock_trace_id(),
-                                       question_id=mock_trace_id(),
-                                       event_type=0,
-                                       robot_id="5C1AEC03573747D",
-                                       tenant_code="cloudminds",
-                                       version="v3",
-                                       test_mode=False,
-                                       asr=talk_pb2.Asr(lang="CH", text=str(kwargs["prompt"])))
-        stream_response = cls.stub.StreamingTalk(talk_req(message).__iter__())
-        response_json = [json.loads(json_format.MessageToJson(response)) for response in stream_response]
-        tts = response_json[-1]["tts"][0]
         try:
-            return tts["action"]["param"]["raw_data"]["wholeAnswer"]
+            message = talk_pb2.TalkRequest(is_full=True,
+                                           agent_id=cls.agent_id,
+                                           session_id=cls.session_id if cls.is_conversation else mock_trace_id(),
+                                           question_id=mock_trace_id(),
+                                           event_type=0,
+                                           robot_id="5C1AEC03573747D",
+                                           tenant_code="cloudminds",
+                                           version="v3",
+                                           test_mode=False,
+                                           asr=talk_pb2.Asr(lang="CH", text=str(kwargs["prompt"])))
+            stream_response = cls.stub.StreamingTalk(talk_req(message).__iter__())
+            response_json = [json.loads(json_format.MessageToJson(response)) for response in stream_response]
+            tts = response_json[-1]["tts"][0]
+            try:
+                return tts["action"]["param"]["raw_data"]["wholeAnswer"]
+            except:
+                if tts.__contains__("text"):
+                    return tts["text"]
+                return ""
         except:
-            if tts.__contains__("text"):
-                return tts["text"]
             return ""
+
+
+class QQSimNew(CloudMindsModel):
+    from transformers import AutoTokenizer, AutoModel
+
+    MODEL_NAME = "qqsim_new"
+    model_name = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+    para_tokenizer = AutoTokenizer.from_pretrained(model_name)
+    para_model = AutoModel.from_pretrained(model_name).to(device)
+    print("load model")
+
+    @classmethod
+    def calculate_sentence_embeddings(cls, sentences):
+        encoded_input = cls.para_tokenizer(sentences, padding=True, truncation=True, return_tensors='pt').to(device)
+        # Compute token embeddings
+        with torch.no_grad():
+            model_output = cls.para_model(**encoded_input)
+        # Perform pooling. In this case, max pooling.
+        sentence_embeddings = cls.mean_pooling(model_output, encoded_input['attention_mask'])
+        return sentence_embeddings
+
+    @staticmethod
+    def mean_pooling(model_output, attention_mask):
+        token_embeddings = model_output[0]  # First element of model_output contains all token embeddings
+        input_mask_expanded = attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
+        return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(input_mask_expanded.sum(1), min=1e-9)
+
+    @staticmethod
+    def calculate_cosine(sentence_embeddings):
+        import torch.nn.functional as F
+        query_embedding = sentence_embeddings[0]
+        score_list = []
+        for qa_embedding in sentence_embeddings[1:]:
+            score = F.cosine_similarity(query_embedding, qa_embedding, dim=0).item()
+            score_list.append(score)
+        return score_list
+
+    @classmethod
+    def calculate_similarity(cls, sentences):
+        sentence_embeddings = cls.calculate_sentence_embeddings(sentences)
+        return cls.calculate_cosine(sentence_embeddings)
+
+    @classmethod
+    def create(cls, *args, **kwargs):
+        query = str(kwargs["prompt"])
+        sentence1 = query.split("\n")[1].replace("User: 句子1：", "")
+        sentence2 = query.split("\n")[2].replace("User: 句子2：", "")
+        sentences = [sentence1, sentence2]
+        score = cls.calculate_similarity(sentences)
+
+        line = 0.7
+
+        return "是" if score[0] > line else "否"
 
 
 if __name__ == '__main__':
