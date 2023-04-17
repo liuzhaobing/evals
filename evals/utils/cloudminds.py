@@ -64,11 +64,17 @@ class OpenAIAPI(CloudMindsModel):
 
     @classmethod
     def create(cls, *args, **kwargs):
+        is_conversation = False
+        session_id = mock_trace_id()
+        if kwargs.__contains__("is_conversation"):
+            is_conversation = kwargs["is_conversation"]
+        if kwargs.__contains__("session_id"):
+            session_id = kwargs["session_id"]
         url = "http://172.16.32.2:31806/chatgpt/api/ask"
         payload = {
             "input": [{"role": "system", "content": "You are a helpful assistant."},
                       {"role": "user", "content": str(kwargs["prompt"])}],
-            "conv_user_id": "cffbda0f-ea62-4549-b766-ac7356e0b5ca2"
+            "conv_user_id": session_id
         }
         resp = requests.post(url, json=payload)
         d = resp.json()
@@ -83,11 +89,17 @@ class ChatGLMAPI(CloudMindsModel):
 
     @classmethod
     def create(cls, *args, **kwargs):
+        is_conversation = False
+        session_id = mock_trace_id()
+        if kwargs.__contains__("is_conversation"):
+            is_conversation = kwargs["is_conversation"]
+        if kwargs.__contains__("session_id"):
+            session_id = kwargs["session_id"]
         url = f'http://172.16.23.85:30592/chatglm/ask'
         resp = requests.post(url, json={
             "input": str(kwargs["prompt"]),
             "history": [],
-            "conv_user_id": str(uuid.uuid4()),
+            "conv_user_id": session_id,
         })
         return resp.json()["body"]["message"]
 
@@ -97,7 +109,7 @@ def mock_trace_id():
 
 
 class SmartVoice(CloudMindsModel):
-    MODEL_NAME = "flag_open"
+    MODEL_NAME = "smartvoice"
     address = "172.16.23.85:30811"  # fit 86
     agent_id = 65
     is_conversation = False
@@ -116,6 +128,17 @@ class SmartVoice(CloudMindsModel):
 
     @classmethod
     def call(cls, *args, **kwargs):
+        if kwargs.__contains__("address"):
+            cls.address = kwargs["address"]
+        if kwargs.__contains__("agent_id"):
+            cls.agent_id = kwargs["agent_id"]
+        if kwargs.__contains__("is_conversation"):
+            cls.is_conversation = kwargs["is_conversation"]
+        if kwargs.__contains__("session_id"):
+            cls.session_id = kwargs["session_id"]
+        if not cls.is_conversation:
+            cls.session_id = mock_trace_id()
+
         def talk_req(payload):
             yield payload
 

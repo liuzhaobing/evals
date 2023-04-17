@@ -25,3 +25,5 @@ grpcio==1.47.0
 grpcio-tools==1.44.0
 sentence-transformers~=2.2.2
 zhon~=1.1.5
+Flask~=2.2.3
+gevent~=22.10.2
