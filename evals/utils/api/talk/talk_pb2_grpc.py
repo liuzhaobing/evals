@@ -19,6 +19,11 @@ class TalkStub(object):
                 request_serializer=talk__pb2.TalkRequest.SerializeToString,
                 response_deserializer=talk__pb2.TalkResponse.FromString,
                 )
+        self.Talk = channel.unary_unary(
+                '/svpb.Talk/Talk',
+                request_serializer=talk__pb2.TalkRequest.SerializeToString,
+                response_deserializer=talk__pb2.TalkResponse.FromString,
+                )
 
 
 class TalkServicer(object):
@@ -30,11 +35,22 @@ class TalkServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def Talk(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_TalkServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'StreamingTalk': grpc.stream_stream_rpc_method_handler(
                     servicer.StreamingTalk,
+                    request_deserializer=talk__pb2.TalkRequest.FromString,
+                    response_serializer=talk__pb2.TalkResponse.SerializeToString,
+            ),
+            'Talk': grpc.unary_unary_rpc_method_handler(
+                    servicer.Talk,
                     request_deserializer=talk__pb2.TalkRequest.FromString,
                     response_serializer=talk__pb2.TalkResponse.SerializeToString,
             ),
@@ -60,6 +76,23 @@ class Talk(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.stream_stream(request_iterator, target, '/svpb.Talk/StreamingTalk',
+            talk__pb2.TalkRequest.SerializeToString,
+            talk__pb2.TalkResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def Talk(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/svpb.Talk/Talk',
             talk__pb2.TalkRequest.SerializeToString,
             talk__pb2.TalkResponse.FromString,
             options, channel_credentials,

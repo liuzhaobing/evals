@@ -207,4 +207,5 @@ message HitLogDebug {
 
 service Talk {  
   rpc StreamingTalk(stream TalkRequest) returns (stream TalkResponse) {};
+  rpc Talk(TalkRequest) returns (TalkResponse) {};
 }
