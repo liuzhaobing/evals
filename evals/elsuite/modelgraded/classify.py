@@ -40,7 +40,7 @@ class ModelBasedClassify(evals.Eval):
         multicomp_temperature: float = 0.4,
         samples_renamings: Optional[dict[str, str]] = None,
         eval_type: Optional[str] = None,
-        eval_model: str = "gpt-3.5-turbo",
+        eval_model: str = "openai_api",
         metaeval: bool = False,
         modelgraded_spec_args: Optional[dict[str, dict[str, str]]] = None,
         **kwargs,
@@ -80,7 +80,7 @@ class ModelBasedClassify(evals.Eval):
             modelgraded_spec, **spec_kwargs
         )
         if eval_type:
-            self.mg.append_answer_prompt(eval_type)
+            self.mg.append_answer_prompt(eval_type, modelgraded_spec)
 
     def eval_sample(self, test_sample: dict, rng: Random) -> None:
         """Evaluate a single sample.

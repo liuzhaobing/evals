@@ -76,13 +76,14 @@ class ModelGradedSpec:
     def append_answer_prompt(
         self,
         eval_type: str,
+        modelgraded_spec: str,
         append_type: str = "as_content",
         prompt: Optional[OpenAICreateChatPrompt] = None,
     ):
         """Append answer prompt to prompt. Can only be called once."""
         assert self.eval_type is None, f"eval_type already set: {eval_type}"
         prompt = prompt or ANSWER_PROMPTS[eval_type]
-        prompt = format_prompt(prompt, choices=choice_to_str(self.choice_strings))
+        prompt = format_prompt(prompt, choices=choice_to_str(self.choice_strings, modelgraded_spec))
         if append_type == "as_content":
             assert isinstance(prompt, str), f"prompt must be str, not {type(prompt)}"
             self.prompt[-1]["content"] += "\n\n" + prompt

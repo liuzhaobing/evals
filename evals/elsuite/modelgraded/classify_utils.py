@@ -1,9 +1,11 @@
 # -*- coding:utf-8 -*-
 import itertools
+import logging
 import string
 from typing import Callable, Iterable
 
 from evals.elsuite.utils import format_necessary
+from zhon.hanzi import punctuation as punctuation_zh
 
 INVALID_STR = "__invalid__"
 CHOICE_KEY = "choice"
@@ -25,7 +27,7 @@ Reasoning:""".strip(),
 推論：
     """.strip(),
     "cot_classify_zh": """
-首先，一步步写出你的推理，确保你的结论是正确的。 避免一开始就简单地陈述正确答案。 然后只打印 {choices} 中的一个选项（不带引号或标点符号）在它自己的对应于正确答案的行上。 最后，在新行中单独重复答案，请在新行中单独重复答案，一定要在新行中单独重复答案。
+首先，一步步写出你的推理，并确保你的结论是正确的，避免一开始就简单地陈述正确答案。 然后只输出一个正确答案所对应的选项标签{choices}，不带任何标点符号。 最后，在新的一行中单独重复选项标签。
 
 推理：
     """.strip(),
@@ -38,8 +40,11 @@ MATCH_FNS = {
 }
 
 
-def choice_to_str(choice_strings: Iterable[str]) -> str:
+def choice_to_str(choice_strings: Iterable[str], modelgraded_spec: str) -> str:
     """Return a string of choices, e.g. '"Yes" or "No" or "Maybe"'."""
+    if modelgraded_spec == "fact_zh":
+        """Return a string of choices, e.g. 'A、B、C、D、E'."""
+        return "、".join(f'{choice}' for choice in choice_strings)
     return " or ".join(f'"{choice}"' for choice in choice_strings)
 
 
@@ -50,11 +55,21 @@ def get_choice(text: str, eval_type: str, match_fn: Callable, choice_strings: It
         lines = lines[::-1]  # reverse lines
     for line in lines:
         line = line.strip()
-        line = "".join(c for c in line if c not in string.punctuation)
+        line = "".join(c for c in line if c not in (string.punctuation + punctuation_zh))
         if not line:
             continue
         for choice in choice_strings:
             if match_fn(line, choice):
+                return choice
+
+    # 兜底解决方案
+    for line in lines:
+        line = "".join(c for c in line.strip() if c not in (string.punctuation + punctuation_zh))
+        if not line:
+            continue
+        for choice in choice_strings:
+            if choice in line:
+                logging.warning(dict(possible_choice=choice, original_sentences=lines))
                 return choice
     return INVALID_STR
 

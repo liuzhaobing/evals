@@ -1,5 +1,5 @@
 import os
-os.environ['OPENAI_API_KEY'] = "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"
+os.environ['OPENAI_API_KEY'] = "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"
 os.environ['EVALS_THREADS'] = "1"
 
 from evals.utils import cloudminds
@@ -149,7 +149,8 @@ class ModelResolver:
 
     @cached_property
     def all_models(self):
-        return self.api_model_ids + list(self.THIRD_MODELS)
+        # return self.api_model_ids + list(self.THIRD_MODELS)
+        return list(self.THIRD_MODELS)
 
     @cached_property
     def api_model_ids(self):
