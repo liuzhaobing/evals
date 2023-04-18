@@ -13,6 +13,7 @@ from typing import Any, Awaitable, Callable, Dict, List, Optional, Tuple
 from tqdm import tqdm
 
 from .base import ModelSpec, ModelSpecs
+from .elsuite.modelgraded.classify_utils import INVALID_STR
 from .record import RecorderBase
 from .registry import Registry
 
@@ -143,6 +144,9 @@ class Eval(abc.ABC):
                     return result
                 except concurrent.futures.TimeoutError as e:
                     executor.shutdown(wait=False)
+                    _, idx = args
+                    logger.info(f"wait future.result timeout [{timeout}]. record it as {INVALID_STR}")
+                    return idx, INVALID_STR
 
         with ThreadPool(threads) as pool:
             if os.environ.get("EVALS_SEQUENTIAL", "0") in {"1", "true", "yes"}:

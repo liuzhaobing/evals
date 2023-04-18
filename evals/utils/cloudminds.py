@@ -155,10 +155,13 @@ class SmartVoice(CloudMindsModel):
                                            asr=talk_pb2.Asr(lang="CH", text=str(kwargs["prompt"])))
             response = cls.stub.Talk(message)
             for tts in response.tts:
-                try:
-                    return json_format.MessageToDict(tts.action.param.raw_data)["wholeAnswer"]
-                except:
+                raw_data = json_format.MessageToDict(tts.action.param.raw_data)
+                if raw_data:
+                    if raw_data.__contains__("wholeAnswer"):
+                        return raw_data["wholeAnswer"]
+                if tts.text:
                     return tts.text
+            return ""
         except:
             return ""
 
