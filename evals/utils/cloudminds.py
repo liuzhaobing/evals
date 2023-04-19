@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+import logging
 import time
 
 import requests
@@ -32,9 +33,21 @@ class CloudMindsModel:
             if not hasattr(model, "MODEL_NAME"):
                 continue
             if model.MODEL_NAME == kwargs["model"]:
+                retry = 0
+                while True:
+                    retry += 1
+                    start_time = time.time()
+                    model_output = model.create(*args, **kwargs)
+                    edg_cost = int(time.time() - start_time) * 1000
+                    if model_output:
+                        break
+                    if retry >= 3:
+                        logging.info(f"model [{model.MODEL_NAME}] call failed after retry {retry}")
+                        break
+                    logging.info(f"model [{model.MODEL_NAME}] call failed retry {retry}")
                 return dict(id=str(uuid.uuid4()),
                             model=model.MODEL_NAME,
-                            choices=[{"message": {"role": "assistant", "content": model.create(*args, **kwargs)}}])
+                            choices=[{"message": {"role": "assistant", "content": model_output, "edg_cost": edg_cost}}])
         raise ValueError(f"no such model named {kwargs['model']}")
 
 
@@ -120,14 +133,6 @@ class SmartVoice(CloudMindsModel):
 
     @classmethod
     def create(cls, *args, **kwargs):
-        for i in range(3):
-            msg = cls.call(*args, **kwargs)
-            if msg != "":
-                return msg
-            time.sleep(60)
-
-    @classmethod
-    def call(cls, *args, **kwargs):
         if kwargs.__contains__("address"):
             cls.address = kwargs["address"]
         if kwargs.__contains__("agent_id"):
@@ -170,7 +175,7 @@ if __name__ == '__main__':
     # model_name = "chatglm_api"
     # model_name = "openai_api"
     # model_name = "bloom_api"
-    model_name = "flag_open"
+    model_name = "smartvoice"
     result = ChatCompletion.create(model=model_name,
                                    prompt="任务：判断两个句子语义是否相似，回答'否'或者'是'。\nUser: 句子1：出入境的回执单可以乘机吗。\nUser: 句子2：出入境管理局开的证明可以换登记牌吗。\nAssistant: ")
     print(result)

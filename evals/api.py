@@ -108,6 +108,7 @@ def completion_query(
         if model_spec.is_chat or model_spec.is_third:
             for choice in result["choices"]:
                 choice["text"] = choice["message"]["content"]
+                metadata["edg_cost"] = choice["message"]["edg_cost"]
 
     return result, openai_create_prompt, metadata
 
