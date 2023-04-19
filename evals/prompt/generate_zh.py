@@ -350,6 +350,7 @@ class cluewsc2020(GenerateZh):
 
     def format_chat_prompt(self, item):
         return [{"role": "system", "content": "任务：阅读一段文本，判断陈述句中指代是否正确，回答“正确”或“错误”。"},
+                {"role": "system", "content": f"文本内容：{item['text']}"},
                 {"role": "user",
                  "content": f"陈述：“{item['target']['span2_text']}”在句中指代“{item['target']['span1_text']}”。"}]
 
