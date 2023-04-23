@@ -11,6 +11,7 @@ import json
 from evals.utils.api.talk import talk_pb2
 from evals.utils.api.talk import talk_pb2_grpc
 from google.protobuf import json_format
+from wudao.api_request import getToken, executeEngine
 
 if torch.cuda.is_available():
     device = torch.device("cuda:0")
@@ -68,12 +69,16 @@ class BloomAPI(CloudMindsModel):
     def create(cls, *args, **kwargs) -> str:
         url = f'http://172.16.33.2:8080/bloom'
         payload = {"input": str(kwargs["prompt"])}
-        resp = requests.request(method="POST", url=url, json=payload)
-        return resp.content.decode().strip()
+        try:
+            resp = requests.request(method="POST", url=url, json=payload)
+            return resp.content.decode().strip()
+        except:
+            return ""
 
 
 class OpenAIAPI(CloudMindsModel):
     MODEL_NAME = "openai_api"
+    TOKEN = ""
 
     @classmethod
     def create(cls, *args, **kwargs):
@@ -83,22 +88,68 @@ class OpenAIAPI(CloudMindsModel):
             is_conversation = kwargs["is_conversation"]
         if kwargs.__contains__("session_id"):
             session_id = kwargs["session_id"]
-        url = "http://172.16.32.2:31806/chatgpt/api/ask"
-        payload = {
-            "input": [{"role": "system", "content": "You are a helpful assistant."},
-                      {"role": "user", "content": str(kwargs["prompt"])}],
-            "conv_user_id": session_id
+        url = "https://openai.harix.iamidata.com/chatgpt/api/ask"
+        if not cls.TOKEN:
+            raise ValueError("invalid access token for interface openai api")
+        headers = {
+            "ApiName": "robotGptApiProxy",
+            "Content-Type": "application/json",
+            "Authorization": cls.TOKEN
         }
-        resp = requests.post(url, json=payload)
-        d = resp.json()
-        rtn = ""
-        if d["code"] == 0:
-            rtn = d["body"]["message"]
-        return rtn
+        if kwargs.__contains__("prompt"):
+            payload = {
+                "input": [{"role": "system", "content": "You are a helpful assistant."},
+                          {"role": "user", "content": str(kwargs["prompt"])}],
+                "conv_user_id": session_id
+            }
+        else:
+            kwargs["conv_user_id"] = session_id
+            payload = kwargs
+        try:
+            resp = requests.request(method="POST", url=url, headers=headers, json=payload)
+            return resp.json()["body"]["message"]
+        except:
+            return ""
+
+
+class ChatGLM130B(CloudMindsModel):
+    MODEL_NAME = "chatglm_api_130b"
+    APIKEY = ""
+    PUBLICKEY = ""
+    TOKEN = ""
+
+    @classmethod
+    def get_token(cls):
+        token_result = getToken(cls.APIKEY, cls.PUBLICKEY)
+        if token_result and token_result["code"] == 200:
+            return token_result["data"]
+        logging.info("chatGLM get token error")
+        return ""
+
+    @classmethod
+    def create(cls, *args, **kwargs):
+        if not cls.APIKEY or not cls.PUBLICKEY:
+            raise ValueError("invalid api key or public key for interface chatglm api")
+
+        if not cls.TOKEN:
+            cls.TOKEN = cls.get_token()
+        if not cls.TOKEN:
+            raise ValueError("invalid access token for interface chatglm api")
+
+        payload = dict(top_p=0.7,
+                       temperature=0.9,
+                       prompt=str(kwargs["prompt"]),
+                       history=[],
+                       requestTaskNo=mock_trace_id())
+        resp = executeEngine(ability_type="chatGLM", engine_type="chatGLM", auth_token=cls.TOKEN, params=payload)
+
+        if resp["code"] == 200:
+            return resp["data"]["outputText"]
+        return ""
 
 
 class ChatGLMAPI(CloudMindsModel):
-    MODEL_NAME = "chatglm_api"
+    MODEL_NAME = "chatglm_api_6b"
 
     @classmethod
     def create(cls, *args, **kwargs):
@@ -108,13 +159,21 @@ class ChatGLMAPI(CloudMindsModel):
             is_conversation = kwargs["is_conversation"]
         if kwargs.__contains__("session_id"):
             session_id = kwargs["session_id"]
-        url = f'http://172.16.23.85:30592/chatglm/ask'
-        resp = requests.post(url, json={
-            "input": str(kwargs["prompt"]),
-            "history": [],
-            "conv_user_id": session_id,
-        })
-        return resp.json()["body"]["message"]
+        url = "http://172.16.23.85:30592/chatglm/ask"
+        if kwargs.__contains__("prompt"):
+            payload = {
+                "input": str(kwargs["prompt"]),
+                "history": [],
+                "conv_user_id": session_id,
+            }
+        else:
+            kwargs["conv_user_id"] = session_id
+            payload = kwargs
+        try:
+            resp = requests.request(method="POST", url=url, json=payload)
+            return resp.json()["body"]["message"]
+        except:
+            return ""
 
 
 def mock_trace_id():
@@ -172,10 +231,11 @@ class SmartVoice(CloudMindsModel):
 
 
 if __name__ == '__main__':
-    # model_name = "chatglm_api"
-    # model_name = "openai_api"
+    # model_name = "smartvoice"
+    model_name = "openai_api"
     # model_name = "bloom_api"
-    model_name = "smartvoice"
+    # model_name = "chatglm_api_6b"
+    # model_name = "chatglm_api_130b"
     result = ChatCompletion.create(model=model_name,
                                    prompt="任务：判断两个句子语义是否相似，回答'否'或者'是'。\nUser: 句子1：出入境的回执单可以乘机吗。\nUser: 句子2：出入境管理局开的证明可以换登记牌吗。\nAssistant: ")
     print(result)
