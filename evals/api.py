@@ -64,10 +64,14 @@ def completion_query(
             prompt = CompletionPrompt(
                 raw_prompt=prompt,
             )
-
-    openai_create_prompt: Union[
-        OpenAICreatePrompt, OpenAICreateChatPrompt
-    ] = prompt.to_openai_create_prompt()
+    if "robot" in model_spec.name:
+        openai_create_prompt: Union[
+            OpenAICreatePrompt, OpenAICreateChatPrompt
+        ] = prompt.to_robot_gpt_create_prompt()
+    else:
+        openai_create_prompt: Union[
+            OpenAICreatePrompt, OpenAICreateChatPrompt
+        ] = prompt.to_openai_create_prompt()
 
     extra_args = {
         key: model_spec.extra_options.get(key, kwargs.get(key))

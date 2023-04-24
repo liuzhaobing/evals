@@ -230,12 +230,27 @@ class SmartVoice(CloudMindsModel):
             return ""
 
 
+class RobotGPT(CloudMindsModel):
+    MODEL_NAME = "robotgpt_api"
+
+    @classmethod
+    def create(cls, *args, **kwargs):
+        url = "http://172.16.23.8:7080/chat_stream"
+        try:
+            resp = requests.request(method="POST", url=url, json=dict(robotId="5C1AEC03573747D", history=[],
+                                                                      prompt=str(kwargs["prompt"])))
+            return resp.content.decode().strip()
+        except:
+            return ""
+
+
 if __name__ == '__main__':
     # model_name = "smartvoice"
-    model_name = "openai_api"
+    # model_name = "openai_api"
     # model_name = "bloom_api"
     # model_name = "chatglm_api_6b"
     # model_name = "chatglm_api_130b"
+    model_name = "robotgpt_api"
     result = ChatCompletion.create(model=model_name,
-                                   prompt="任务：判断两个句子语义是否相似，回答'否'或者'是'。\nUser: 句子1：出入境的回执单可以乘机吗。\nUser: 句子2：出入境管理局开的证明可以换登记牌吗。\nAssistant: ")
+                                   prompt="任务：根据客人的评语推测他对本次用餐体验是积极还是消极态度。\n[Round 0]\n问: 评语：非常快,超级方便,辛苦啦\n答: ")
     print(result)

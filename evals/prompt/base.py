@@ -19,6 +19,49 @@ OpenAIChatMessage = Dict[str, str]  # A message is a dictionary with "role" and 
 OpenAICreateChatPrompt = List[OpenAIChatMessage]  # A chat log is a list of messages
 
 
+def chat_prompt_to_text_prompt_cloudminds(prompt: OpenAICreateChatPrompt, for_completion: bool = True,
+                                          for_robot_gpt: bool = False) -> str:
+    """RobotGPT专用prompt构造器"""
+    def check_chinese(string):
+        for ch in string:
+            if u'\u4e00' <= ch <= u'\u9fff':
+                return True
+        return False
+
+    if not for_robot_gpt:
+        return chat_prompt_to_text_prompt(prompt, for_completion)
+    assert is_chat_prompt(prompt), f"Expected a chat prompt, got {prompt}"
+
+    if not check_chinese(prompt[0]["content"]):
+        return chat_prompt_to_text_prompt(prompt, for_completion)
+
+    chat_to_prefixes_zh = {
+        "system": "",
+        "user": "问: ",
+        "assistant": "答: ",
+    }
+
+    # For a single message, be it system, user, or assistant, just return the message
+    if len(prompt) == 1:
+        return prompt[0]["content"]
+
+    text = ""
+    now_round = 0
+    for msg in prompt:
+        role = msg["name"] if "name" in msg else msg["role"]
+        prefix = chat_to_prefixes_zh.get(role, role.capitalize() + ": ")
+        content = msg["content"]
+        if role == "user":
+            text += f"[Round {now_round}]\n{prefix}{content}\n"
+            now_round += 1
+        else:
+            text += f"{prefix}{content}\n"
+
+    if for_completion:
+        text += "答: "
+    return text.lstrip()
+
+
 def chat_prompt_to_text_prompt(prompt: OpenAICreateChatPrompt, for_completion: bool = True) -> str:
     """
     Render a chat prompt as a text prompt. User and assistant messages are separated by newlines
@@ -91,6 +134,10 @@ class CompletionPrompt(Prompt):
         if is_chat_prompt(self.raw_prompt):
             return self._render_chat_prompt_as_text(self.raw_prompt)
         return self.raw_prompt
+
+    def to_robot_gpt_create_prompt(self) -> OpenAICreatePrompt:
+        if is_chat_prompt(self.raw_prompt):
+            return chat_prompt_to_text_prompt_cloudminds(self.raw_prompt, for_robot_gpt=True)
 
 
 @dataclass
