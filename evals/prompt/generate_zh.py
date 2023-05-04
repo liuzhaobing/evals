@@ -98,7 +98,7 @@ class iflytek(GenerateZh):
     def format_chat_prompt(self, item):
         return [{"role": "system", "content": "任务：阅读应用程序描述，从给出的标签中选出一个最适合它的应用分类。"},
                 {"role": "system", "content": f"标签：{'、'.join(self.iflytek_tags)}。"},
-                {"role": "user", "content": f"应用程序描述：{item['sentence']}。"}]
+                {"role": "system", "content": f"应用程序描述：{item['sentence']}。"}]
 
 
 class waimai_10k(GenerateZh):
@@ -122,7 +122,7 @@ class waimai_10k(GenerateZh):
 
     def format_chat_prompt(self, item):
         return [{"role": "system", "content": "任务：根据客人的评语推测他对本次用餐体验是积极还是消极态度。"},
-                {"role": "user", "content": f"评语：{item['review']}"}]
+                {"role": "system", "content": f"评语：{item['review']}"}]
 
 
 class ChnSentiCorp_htl_all(GenerateZh):
@@ -146,7 +146,7 @@ class ChnSentiCorp_htl_all(GenerateZh):
 
     def format_chat_prompt(self, item):
         return [{"role": "system", "content": "任务：根据客人的评语推测他对本次酒店入住体验是积极还是消极态度。"},
-                {"role": "user", "content": f"评语：{item['review']}"}]
+                {"role": "system", "content": f"评语：{item['review']}"}]
 
 
 class afqmc(GenerateZh):
@@ -175,8 +175,8 @@ class afqmc(GenerateZh):
 
     def format_chat_prompt(self, item):
         return [{"role": "system", "content": "任务：判断两个句子语义是否相似，回答“否”或者“是”。"},
-                {"role": "user", "content": f"句子1：{item['sentence1']}。"},
-                {"role": "user", "content": f"句子2：{item['sentence2']}。"}]
+                {"role": "system", "content": f"句子1：{item['sentence1']}。"},
+                {"role": "system", "content": f"句子2：{item['sentence2']}。"}]
 
 
 class lcqmc(GenerateZh):
@@ -208,8 +208,8 @@ class lcqmc(GenerateZh):
 
     def format_chat_prompt(self, item):
         return [{"role": "system", "content": "任务：判断两个句子语义是否相似，回答“否”或者“是”。"},
-                {"role": "user", "content": f"句子1：{item['sentence1']}。"},
-                {"role": "user", "content": f"句子2：{item['sentence2']}。"}]
+                {"role": "system", "content": f"句子1：{item['sentence1']}。"},
+                {"role": "system", "content": f"句子2：{item['sentence2']}。"}]
 
 
 class cmrc(GenerateZh):
@@ -275,7 +275,7 @@ class csl(GenerateZh):
         return [{"role": "system",
                  "content": "任务：阅读论文摘要后提取关键词，判断如下提供的关键词是否正确，回答“正确”或“错误”。"},
                 {"role": "system", "content": f"摘要：{item['abst']}。"},
-                {"role": "user", "content": f"关键词：{'、'.join(item['keyword'])}。"}]
+                {"role": "system", "content": f"关键词：{'、'.join(item['keyword'])}。"}]
 
 
 class cluener2020(GenerateZh):
@@ -322,7 +322,7 @@ class cluener2020(GenerateZh):
     def format_chat_prompt(self, item):
         return [{"role": "system", "content": "任务：按照实体类别提取下面这段文本的实体。"},
                 {"role": "system", "content": f"备选的实体类别：{'、'.join(self.cluener_tags.values())}。"},
-                {"role": "user", "content": f"文本内容：{item['text']}。"}]
+                {"role": "system", "content": f"文本内容：{item['text']}。"}]
 
 
 class cluewsc2020(GenerateZh):
@@ -351,7 +351,7 @@ class cluewsc2020(GenerateZh):
     def format_chat_prompt(self, item):
         return [{"role": "system", "content": "任务：阅读一段文本，判断陈述句中指代是否正确，回答“正确”或“错误”。"},
                 {"role": "system", "content": f"文本内容：{item['text']}"},
-                {"role": "user",
+                {"role": "system",
                  "content": f"陈述：“{item['target']['span2_text']}”在句中指代“{item['target']['span1_text']}”。"}]
 
 
@@ -406,7 +406,7 @@ class MDCSC(GenerateZh):
     def format_chat_prompt(self, item):
         return [{"role": "system",
                  "content": "任务：指出句中的错字并给出纠正后的句子，只回答纠正后的句子，如果句子没有错误就回答句子本身。"},
-                {"role": "user", "content": f"句子：{item['sentence1']}"}]
+                {"role": "system", "content": f"句子：{item['sentence1']}"}]
 
 
 class RiSAWOZ(GenerateZh):
@@ -496,7 +496,7 @@ class semantic_similarity(GenerateZh):
         for label, filename in resolve.items():
             df = pd.read_excel(io=os.path.join(self.this_download_path, filename), sheet_name="Sheet1")
             head_list = list(df.columns)
-            with jsonlines.open(os.path.join(self.this_dataset_path, label+".jsonl"), "w") as f:
+            with jsonlines.open(os.path.join(self.this_dataset_path, label + ".jsonl"), "w") as f:
                 for line in df.values:
                     f.write(dict(zip(head_list, line)))
 
@@ -505,14 +505,233 @@ class semantic_similarity(GenerateZh):
 
     def format_chat_prompt(self, item):
         return [{"role": "system", "content": "任务：判断两个句子语义是否相似，回答“否”或者“是”。"},
-                {"role": "user", "content": f"句子1：{item['sentence1']}。"},
-                {"role": "user", "content": f"句子2：{item['sentence2']}。"}]
+                {"role": "system", "content": f"句子1：{item['sentence1']}。"},
+                {"role": "system", "content": f"句子2：{item['sentence2']}。"}]
+
+
+class dureader_checklist(GenerateZh):
+    """
+    refer: https://github.com/zhoujx4/DuReader-Checklist-BASELINE
+    """
+
+    def extract_and_save_datasets(self):
+        resolve = {"test": "test1.json", "train": "train.json", "validation": "dev.json"}
+        for label, filename in resolve.items():
+            with open(os.path.join(self.this_download_path, filename), encoding="utf-8") as f:
+                datas = json.load(f)
+                datas = datas["data"][0]["paragraphs"]
+                with jsonlines.open(os.path.join(self.this_dataset_path, label + ".jsonl"), "w") as wf:
+                    for item in datas:
+                        wf.write(item)
+
+    def format_one_json(self, item):
+        if item["qas"][0]["answers"][0]["text"] == "":
+            return dict(input=self.format_chat_prompt(item), ideal="无答案")
+        else:
+            return dict(input=self.format_chat_prompt(item), ideal=item["qas"][0]["answers"][0]["text"])
+
+    def format_chat_prompt(self, item):
+        return [
+            {
+                "role": "system",
+                "content": "给定一个问题q，一段篇章p，参赛系统需要根据篇章内容，判断该篇章p中是否包含给定问题的答案，如果是，则给出该问题的答案；否则输出“无答案”",
+            },
+            {
+                "role": "system",
+                "content": "p:番石榴性温,味甜、酸、涩…，最重要的是番石榴所含的脂肪热量较低,一个番石榴所含的脂肪约0.9克重或84卡路里。比起苹果,番石榴所含有的脂肪少38%,卡路里少, q: 番石榴汁热量?",
+                "name": "example_user"
+            },
+            {
+                "role": "system",
+                "content": "一个番石榴所含的脂肪约0.9克重或84卡路里",
+                "name": "example_assistant"
+            },
+            {
+                "role": "system",
+                "content": "p:云南省下辖8个市、8个少数民族自治州,面积39万平方千米,总人口4596万人,云南汉族人口为3062.9万人,占云南省总人口的66.63%, q: 云南文山市多少人口?",
+                "name": "example_user"
+            },
+            {
+                "role": "system",
+                "content": "无答案",
+                "name": "example_assistant"
+            },
+            {
+                "role": "user",
+                "content": "p: {}, q:{}".format(item["context"], item["qas"][0]["question"]),
+            }
+        ]
+
+
+class Ape210K(GenerateZh):
+    def extract_and_save_datasets(self):
+        resolve = {"test": "test.ape.json", "train": "train.ape.json", "validation": "valid.ape.json"}
+        for label, filename in resolve.items():
+            datas = open(os.path.join(self.this_download_path, filename), encoding="utf-8").readlines()
+            with jsonlines.open(os.path.join(self.this_dataset_path, label + ".jsonl"), "w") as wf:
+                wf.write_all(datas)
+
+    def format_one_json(self, item):
+        item = json.loads(item)
+        return dict(input=self.format_chat_prompt(item), ideal=item["ans"])
+
+    def format_chat_prompt(self, item):
+        return [
+            {
+                "role": "system",
+                "content": "求解下面的问题, 只输出答案即可，问题: {}".format(item["original_text"]),
+            }
+        ]
+
+
+class WebQA(GenerateZh):
+    def extract_and_save_datasets(self):
+        resolve = {"test": "me_test.ann.json", "train": "me_train.json", "validation": "me_validation.ann.json"}
+        for label, filename in resolve.items():
+            with open(os.path.join(self.this_download_path, filename), encoding="utf-8") as f:
+                datas = json.load(f)
+                with jsonlines.open(os.path.join(self.this_dataset_path, label + ".jsonl"), "w") as wf:
+                    for key, value in datas.items():
+                        wf.write(value)
+
+    def format_one_json(self, item):
+        answer = ""
+        for key, value in item["evidences"].items():
+            if "answer" in value:
+                answer += value["answer"][0]
+        return dict(input=self.format_chat_prompt(item), ideal=answer)
+
+    def format_chat_prompt(self, item):
+        return [
+            {
+                "role": "system",
+                "content": item["question"],
+            }
+        ]
+
+
+class Math23k(GenerateZh):
+    def extract_and_save_datasets(self):
+        resolve = {"test": "math23k_test.json"}
+        for label, filename in resolve.items():
+            datas = json.load(open(os.path.join(self.this_download_path, filename), encoding="utf-8"))
+            with jsonlines.open(os.path.join(self.this_dataset_path, label + ".jsonl"), "w") as wf:
+                wf.write_all(datas)
+
+    def format_one_json(self, item):
+        return dict(input=self.format_chat_prompt(item), ideal=item["ans"])
+
+    def format_chat_prompt(self, item):
+        return [
+            {
+                "role": "system",
+                "content": item["original_text"],
+            }
+        ]
+
+
+class MultiArith(GenerateZh):
+    """MultiArith数学计算
+    test: 600
+
+    refer: https://github.com/wangxr14/Algebraic-Word-Problem-Solver
+    """
+
+    def extract_and_save_datasets(self):
+        resolve = {"test": "MultiArith.json"}
+        for label, filename in resolve.items():
+            with open(os.path.join(self.this_download_path, filename), encoding="utf-8") as f:
+                datas = json.load(f)
+                with jsonlines.open(os.path.join(self.this_dataset_path, label + ".jsonl"), "w") as wf:
+                    for item in datas:
+                        wf.write(item)
+
+    def format_one_json(self, item):
+        return dict(input=self.format_chat_prompt(item), ideal=item["lSolutions"])
+
+    def format_chat_prompt(self, item):
+        return [
+            {
+                "role": "system",
+                "content": "answer the following questions, you only need to give the answer, no need to give a step of information,question is:" +
+                           item["sQuestion"],
+            }
+        ]
+
+
+# 基本常识
+class JBCS(GenerateZh):
+    def extract_and_save_datasets(self):
+        questions = [{
+            "question": "中国的首都是哪里？",
+            "answer": "北京"
+        }, {
+            "question": "在太阳系9大行星中，最大的行星是哪一颗？",
+            "answer": "木星"
+        }, {
+            "question": "为中国赢得第一块澳运会金牌的项目是？",
+            "answer": "射击"
+        }, {
+            "question": "世界最高峰是什么峰？",
+            "answer": "珠穆朗玛峰"
+        }, {
+            "question": "世界上面积最大的国家是哪个国家？",
+            "answer": "俄罗斯"
+        }
+        ]
+        with jsonlines.open(os.path.join(self.this_dataset_path, "test.jsonl"), "w") as wf:
+            for item in questions:
+                wf.write(item)
+
+    def format_one_json(self, item):
+        return dict(input=self.format_chat_prompt(item), ideal=item["answer"])
+
+    def format_chat_prompt(self, item):
+        return [
+            {
+                "role": "system",
+                "content": item["question"],
+            }
+        ]
+
+
+class PKUMOD_CCKS(GenerateZh):
+    def extract_and_save_datasets(self):
+        resolve = {"test": ("验证集问题.txt", "验证集答案.txt")}
+        for label, filename in resolve.items():
+            with open(os.path.join(self.this_download_path, filename[0]), encoding="utf-8") as f:
+                with open(os.path.join(self.this_download_path, filename[1]), encoding="utf-8") as f2:
+                    datas = f.readlines()
+                    datas2 = f2.readlines()
+                    with jsonlines.open(os.path.join(self.this_dataset_path, label + ".jsonl"), "w") as wf:
+                        for i in range(len(datas)):
+                            if datas2[i].startswith('"'):
+                                answer = datas2[i].replace('"', "")
+                            else:
+                                pattern = "<(.*?)>"
+                                matches = re.findall(pattern, datas2[i], re.DOTALL)
+                                answers = []
+                                for match in matches:
+                                    answers.append(match.split("_")[0])
+                                answer = ",".join(answers)
+                            wf.write({"question": datas[i], "answer": answer})
+
+    def format_one_json(self, item):
+        return dict(input=self.format_chat_prompt(item), ideal=item["answer"])
+
+    def format_chat_prompt(self, item):
+        return [
+            {
+                "role": "system",
+                "content": item["question"],
+            }
+        ]
 
 
 if __name__ == '__main__':
     sample = 100
 
-    semantic_similarity(config=["test"])
+    # semantic_similarity(config=["test"])
 
     # xfinal(config=["test"])
 
@@ -541,3 +760,15 @@ if __name__ == '__main__':
     iflytek(config=["validation", sample])  # test(无答案)/validation/train
 
     tnews(config=["validation", sample])  # test(无答案)/validation/train
+
+    Ape210K(config=["test", sample])  # test/train/validation
+
+    dureader_checklist(config=["validation", sample])  # test(无答案)/train/validation
+
+    WebQA(config=["test", sample])  # test/train/validation
+
+    Math23k(config=["test", sample])  # test
+
+    PKUMOD_CCKS(config=["test", sample])  # test
+
+    MultiArith(config=["test", sample])  # test
