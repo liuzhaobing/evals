@@ -1,0 +1,10 @@
+openai_api_fn:
+  class: evals.completion_fns.openai_api:OpenAICompletionFn
+  args:
+    host: https://openai.harix.iamidata.com/chatgpt/api/ask
+    api_key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXkiOiJiZDNhMTMzOTc4MmU0ZmNkYTE2YTI0MTRlODY0NTAyNCIsImV4cCI6MTcxMzMzODI2MX0.f9KpwC2ueQXZAoGqVkfK8DWMJG5r9h9qZkOgwWkh48c
+
+cloudminds_completion_fn:
+  class: evals.completion_fns.cloudminds:CloudMindsCompletionFn
+  args:
+    host: http://172.16.23.12:8023/v1/chat/completions
